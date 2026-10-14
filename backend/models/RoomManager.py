@@ -1,5 +1,5 @@
 import re
-from config import db
+from backend.config import db
 
 
 class RoomManager:
