@@ -50,7 +50,7 @@ class RoomManager:
         
 
     def get_booked_roomId(self, check_in, check_out):
-        return set(booking_collection.distinct("room_id", {"status": {"$in": ACTIVE_STATUSES}}, {"check_in": {"$lt": check_out}}, {"check_out": {"$gt": check_in}}))
+        return set(booking_collection.distinct("room_id", {"status": {"$in": ACTIVE_STATUSES}, "check_in": {"$lt": check_out}, "check_out": {"$gt": check_in}}))
 
 
     def _roomType_filter(self, room_type):
@@ -61,15 +61,14 @@ class RoomManager:
 
 
 # get all the avilabe rooms 
-    def get_availabe_rooms(self, check_in=None, check_out=None, room_type=None):
+    def get_avaiable_rooms(self, check_in=None, check_out=None, room_type=None):
         rooms = list(rooms_collection.find(self._roomType_filter(room_type)).sort("_id", 1))
+        booked = set()
         if check_in and check_out:
             booked = self.get_booked_roomId(check_in, check_out)
-            for room in rooms:
-                room["available"] = str(room["_id"]) not in booked
-            return rooms
-        else:
-            set()
+        for room in rooms:
+            room["available"] = str(room["_id"]) not in booked
+        return rooms
     
 # search only available rooms
     def search_available_rooms(self, check_in, check_out, room_type=None):
