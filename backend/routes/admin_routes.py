@@ -1,13 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort
 #Blueprint: routes group, render_template: HTML template, request: request data(form, method), redirect & url_for: link to another page, session: user login data, flash: message show on next page, abort: stop immediately and return 404
 
-from models.AdminManager import admin_manager
-from models.RoomManager import room_manager
-from models.BookingManager import booking_manager
-from services.BookingFacade import booking_facade
-from services.LoginDecorator import LoginDecorator
-from services.NoficationContract import NotificationContract
-from services.NotificationService import notification_log
+from backend.models.AdminManager import admin_manager
+from backend.models.RoomManager import room_manager
+from backend.models.BookingManager import booking_manager
+from backend.services.BookingFacade import booking_facade
+from backend.services.LoginDecorator import LoginDecorator
+from backend.services.NoficationContract import NotificationContract
+from backend.services.NotificationService import notification_log
 #import project's admin, rooms, bookings, booking facade, login decorator, notification contract, notification log
 
 admin_bp = Blueprint("admin", __name__)#build a "admin" blueprint

@@ -6,7 +6,7 @@
 #Use print() to simulate, and store each record in notification log list to test and verify
 
 from datetime import datetime, timezone #import datatime, timezone in Python
-from services.NoficationContract import NotificationContract
+from backend.services.NoficationContract import NotificationContract
 #import NotificationContract Singleton setting category, for this category to read
 
 notification_log = [] 
