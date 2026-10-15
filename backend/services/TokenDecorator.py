@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone #need to import datetime, tok
 from flask import request, jsonify #To read the user HTTP request, return HTTP response as Json in Python
 from models.AdminManager import admin_manager #import admin manage object, check whether the account exists
 
-class AuthticationTokenService: #Generates and decrypts JWT tokens
+class AuthenticationTokenService: #Generates and decrypts JWT tokens
     @staticmethod #no need self, can directly call
     def generate_token(admin_id):
         payload={ #put token data, whose token and expiration time
@@ -58,7 +58,7 @@ class TokenDecorator: #Protect the Admin API routes that require a valid JWT tok
         #First space split, [1] is afer Bearer's token
             
         try:
-            payload = AuthticationTokenService.decode_token(token)
+            payload = AuthenticationTokenService.decode_token(token)
         except jwt.ExpiredSignatureError:
             return jsonify({"message": "Token expired"}), 401
         except jwt.InvalidTokenError:
