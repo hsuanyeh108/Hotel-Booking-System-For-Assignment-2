@@ -1,5 +1,5 @@
 import os #using for reading environment variables
-from datetime import date #For generate today's date
+from datetime import date, timedelta #For generate today's date
 
 from flask import Flask, render_template, url_for
 #import flask for the whole system to use, render_template for 404 page, url_for for consist the image link
@@ -57,6 +57,13 @@ def create_app():
             return "status-pending"
         return "status-cancelled"
 
+    @app.template_filter("next_day") #Jinja filter-- next_day, check_in + 1 day, used as the check-out min date
+    def next_day(value):
+        try:
+            return (date.fromisoformat(value) + timedelta(days=1)).isoformat()
+        except (TypeError, ValueError): #If the value is empty or invalid, use tomorrow
+            return (date.today() + timedelta(days=1)).isoformat()
+        
     @app.context_processor
     def inject_today():
         #Let the min attribute of the date input tag can block the past date, and using today as default
