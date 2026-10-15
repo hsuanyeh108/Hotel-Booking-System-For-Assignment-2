@@ -1,8 +1,8 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 #generate_password_hash: let the password become irreversible hash code
 #check_password_hash: To verify the password
-from config import db
-from models.tools import to_object_id
+from backend.config import db
+from models.tools import change_to_objectId
 
 class AdminManager:
     def __init__(self, db): #initialize
@@ -35,7 +35,7 @@ class AdminManager:
         return self._admins.find_one({"email": email}) #Find the account that conform to the MongoDB data, and return the query result
 
     def get_by_id(self, admin_id): #Check the account by admin id, according to id to get data, using when verify API token  
-        objectId = to_object_id(admin_id) #Convert admin id to MongoDB object id, and store it in objectId
+        objectId = change_to_objectId(admin_id) #Convert admin id to MongoDB object id, and store it in objectId
         if objectId is None: #If the id is None, reprsent the ObjectId is invalid
             return None 
         return self._admins.find_one({"_id": objectId}) #Find the account that conform to the MongoDB _id data by objectId, and return the query result

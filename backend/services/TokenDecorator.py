@@ -54,7 +54,7 @@ class TokenDecorator: #Protect the Admin API routes that require a valid JWT tok
             return jsonify({"message": "Missing or invalid Authorization header"}), 401
             #Standard format: Authorization: Bearer <token>, if not return 401(no Authorization)
 
-        token = auth_header.split("", 1)[1]
+        token = auth_header.split(" ", 1)[1]
         #First space split, [1] is afer Bearer's token
             
         try:

@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 
-from models.AdminManager import admin_manager
-from models.RoomManager import room_manager, DEFAULT_IMG
-from models.BookingManager import booking_manager
-from services.BookingFacade import booking_facade
-from services.TokenDecorator import AuthenticationTokenService, TokenDecorator
-from services.NoficationContract import NotificationContract
+from backend.models.AdminManager import admin_manager
+from backend.models.RoomManager import room_manager, DEFAULT_IMG
+from backend.models.BookingManager import booking_manager
+from backend.services.BookingFacade import booking_facade
+from backend.services.TokenDecorator import AuthenticationTokenService, TokenDecorator
+from backend.services.NoficationContract import NotificationContract
 
 #name "api" bluewprint, add "/api" prefix
 api_bp = Blueprint("api", __name__)
