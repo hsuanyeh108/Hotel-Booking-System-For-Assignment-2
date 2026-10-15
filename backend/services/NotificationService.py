@@ -62,4 +62,4 @@ class NotificationService:
         }
         #Return the order summary(booking_no, new_status, sent_via, sent_datetime)
         #isoformat() to format the datetime to string
-        #This class always decide from Singleton current setting, So when admin click the save button, the setting will be updated
+        #This class always decide from Singleton current setting, So when admin click the save button, the setting will be updatedㄕ
