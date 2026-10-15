@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 #generate_password_hash: let the password become irreversible hash code
 #check_password_hash: To verify the password
 from config import db
-
+from models.tools import to_object_id
 
 class AdminManager:
     def __init__(self, db): #initialize
@@ -42,6 +42,7 @@ class AdminManager:
     
 #Build object for the whole system share(no need to rebuild the object every time)
 admin_manager = AdminManager(db)
+
 
 
     
