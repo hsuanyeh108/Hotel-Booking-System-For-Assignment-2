@@ -1,3 +1,6 @@
+import re
+from backend.config import db
+from backend.models.tools import change_to_objectId
 
 
 
@@ -18,6 +21,7 @@ class BookingManager:
     def check_order(booking_num, phone):
         pass
 
+
     def get_guest_data(email, phone):
         pass
 
@@ -27,3 +31,8 @@ class BookingManager:
 # update data status
     def update_status(booking_id, status):
         pass
+
+
+
+
+booking_manager = BookingManager(db)
