@@ -61,7 +61,7 @@ class RoomManager:
 
 
 # get all the avilabe rooms 
-    def get_avaiable_rooms(self, check_in=None, check_out=None, room_type=None):
+    def get_available_rooms(self, check_in=None, check_out=None, room_type=None):
         rooms = list(rooms_collection.find(self._roomType_filter(room_type)).sort("_id", 1))
         booked = set()
         if check_in and check_out:

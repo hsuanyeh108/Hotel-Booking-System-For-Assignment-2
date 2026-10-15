@@ -7,7 +7,6 @@ from backend.models.tools import validate_dates
 
 guest_bp = Blueprint("guest", __name__)
 
-get_avaliable_rooms = room_manager.get_avaiable_rooms()
 
 @guest_bp.route("/")
 def home():
@@ -21,5 +20,5 @@ def home():
             flash(error, "error")
             check_in = check_out = ""
 
-    rooms = get_avaliable_rooms(check_in or None, check_out or None, query or None)
+    rooms = room_manager.get_avaliable_rooms(check_in or None, check_out or None, query or None)
     return render_template("search.html", rooms=rooms, check_in=check_in, check_out=check_out, query=query)

@@ -4,7 +4,6 @@ from backend.config import db
 from flask import Flask, render_template, url_for
 from RoomManager import room_manager, DEFALUT_IMG
 
-set_default = room_manager.set_defaults()
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
