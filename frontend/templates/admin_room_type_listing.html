@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Room Type Listings{% endblock %}
+{% block content %}
+<div class="page-head">
+    <h2>Admin - Room Type Listings</h2>
+    <div class="actions"><!-- left is title, and right are buttons, +Add Room Type will link to admin.new_room, or back to dashboard -->
+        <a class="btn btn-green" href="{{ url_for('admin.new_room') }}">+ Add Room Type</a>
+        <a class="btn btn-grey" href="{{ url_for('admin.dashboard') }}">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="room-grid"><!-- Three grid fields -->
+    {% for room in rooms %} <!-- rooms is admin_routes.py return the list-->
+    <div class="room-card">
+        <div><!-- using filter to transfer the path to the real link, alt is when loading error will display the alternative words -->
+            <img src="{{ room.img|img_src }}" alt="{{ room.room_type }}">
+            <h3>{{ room.room_type }}</h3><!-- room type and description -->
+            <p class="desc">{{ room.description }}</p>
+            <div class="price">{{ room.price|aud }}/per night</div><!-- price pass aud to become A$90 -->
+        </div>
+        <div class="card-actions"><!-- Edit is a link -->
+            <a class="btn btn-sm" href="{{ url_for('admin.edit_room', room_id=room._id) }}">Edit</a>
+            <form class="inline-form" method="POST" action="{{ url_for('admin.delete_room_route', room_id=room._id) }}"
+                  onsubmit="return confirm('Delete this room type?');" style="display:flex;"><!-- Delete is POST form, and use confirm message to confirm -->
+                <button type="submit" class="btn btn-red btn-sm" style="flex:1;">Delete</button>
+            </form>
+        </div>
+    </div>
+    {% else %} <!-- No room type then show no room types available -->
+    <p class="empty">No room types available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

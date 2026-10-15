@@ -1,0 +1,19 @@
+{% extends "base.html" %} <!-- Inherit from base.html-->
+{% block title %}Admin Log In{% endblock %}
+{% block content %}
+<div class="login-card"> <!-- The login-card -->
+    <h2>Admin Log In</h2>
+    <form method="POST" action="{{ url_for('admin.login') }}">
+    <!-- After submit the form, go to POST to /admin/login-->
+     <!-- Compare to admin_routes.py POST branches-->
+        <label>Email <!-- Email field, let browser to check the email format, should be required otherwise cannot submit-->
+            <input type="email" name="email" required placeholder="Enter email">
+        </label><!-- name="email" is the backend that should be same as admin_routes.py request.form.get("email")-->
+        <label>Password <!-- Will show the password as dots, name="password" is the backend that should be same as admin_routes.py request.form.get("password")-->
+            <input type="password" name="password" required placeholder="Enter password">
+        </label><!-- Submit button-->
+        <button type="submit" class="btn btn-block" style="margin-top: 15px;">Log In</button>
+    </form><!-- Don't have an account, link to url_for('admin.register')page-->
+    <p class="switch">Don't have an account? <a href="{{ url_for('admin.register') }}">Register</a></p>
+</div>
+{% endblock %}
