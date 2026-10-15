@@ -1,11 +1,11 @@
 import os
 from datetime import date
-
+from backend.config import db
 from flask import Flask, render_template, url_for
-from RoomManager import RoomManager, DEFALUT_IMG
+from RoomManager import room_manager, DEFALUT_IMG
 
-room_manager = RoomManager()
-room_manager.set_defaults()
+set_default = room_manager.set_defaults()
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")

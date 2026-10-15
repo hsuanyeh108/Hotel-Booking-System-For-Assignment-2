@@ -105,7 +105,7 @@ class RoomManager:
             return rooms_collection.delete_one({"_id" : roomId})
 
 
-
+room_manager = RoomManager(db)
 
 
 
