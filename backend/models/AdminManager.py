@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 #generate_password_hash: let the password become irreversible hash code
 #check_password_hash: To verify the password
 from backend.config import db
-from models.tools import change_to_objectId
+from backend.models.tools import change_to_objectId
 
 class AdminManager:
     def __init__(self, db): #initialize

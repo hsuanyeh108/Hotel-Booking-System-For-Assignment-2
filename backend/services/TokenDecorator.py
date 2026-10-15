@@ -11,7 +11,7 @@ import jwt #Use PyJWT to generate and verify token
 
 from datetime import datetime, timedelta, timezone #need to import datetime, token cannot be effective after 24 hours
 from flask import request, jsonify #To read the user HTTP request, return HTTP response as Json in Python
-from models.AdminManager import admin_manager #import admin manage object, check whether the account exists
+from backend.models.AdminManager import admin_manager #import admin manage object, check whether the account exists
 
 class AuthenticationTokenService: #Generates and decrypts JWT tokens
     @staticmethod #no need self, can directly call
