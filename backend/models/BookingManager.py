@@ -6,10 +6,10 @@ from models.tools import change_to_objectId
 from models.RoomManager import room_manager
 
 
+
 bookings_collection = db["bookings"]
 counters_collection = db["counters"]
 
-ACTIVE_STATUSES = ["Pending", "Confirmed"]
 
 
 class BookingManager:
@@ -42,7 +42,6 @@ class BookingManager:
 
     def count_nights(self, check_in, check_out):
         return (self.parse_date(check_out) - self.parse_date(check_in)).days
-
     
 
     def _create_next_booking_number(self,):
