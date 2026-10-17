@@ -1,6 +1,4 @@
 
-import os
-import jwt
 
 from flask import Blueprint, request, jsonify
 from backend.models.AdminManager import admin_manager
@@ -251,8 +249,9 @@ def get_booking(booking_id):
 def cancel_booking(booking_id):
     if not booking_manager.get_booking_by_id(booking_id):
         return jsonify({"message": "Booking not found"}), 404
-    data =request.args.get(silent=True) or {}
-    cancel_booking(booking_id, cancel_by=data.get("cancelled by", "Guest"))
+    
+    data =request.args.get_json(silent=True) or {}
+    cancel_booking(booking_id, cancel_by=data.get("cancelled_by", "Guest"))
     return jsonify(serialize_booking(booking_manager.get_booking_by_id(booking_id))), 200
 
 
