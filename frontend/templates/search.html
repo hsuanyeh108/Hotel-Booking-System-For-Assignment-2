@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Search Available Rooms</h2>
+
+<form class="search-box" method="GET" action="{{ url_for('guest.home') }}">
+    <label>Check-in
+        <input type="date" id="check_in" name="check_in" value="{{ check_in }}" min="{{ today }}">
+    </label>
+    <label>Check-out
+        <input type="date" id="check_out" name="check_out" value="{{ check_out }}" min="{{ today }}">
+    </label>
+    {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+    <button type="submit" class="btn">Search Rooms</button>
+</form>
+
+{% if check_in and check_out %}
+    <p class="empty" style="margin-bottom: 16px;">Showing availability for {{ check_in }} to {{ check_out }}.</p>
+{% endif %}
+
+<div class="room-grid">
+    {% for room in rooms %}
+    <div class="room-card">
+        <div>
+            <img src="{{ room.img|img_src }}" alt="{{ room.room_type }}">
+            {% if room.available %}
+                <span class="tag tag-available">Available</span>
+            {% else %}
+                <span class="tag tag-unavailable">Non-available</span>
+            {% endif %}
+            <h3>{{ room.room_type }}</h3>
+            <p class="desc">{{ room.description }}</p>
+            <div class="price">{{ room.price|aud }}/per night</div>
+        </div>
+        {% if room.available %}
+            <a class="btn btn-block" href="{{ url_for('guest.book', room_id=room._id, check_in=check_in, check_out=check_out) }}">Book Now</a>
+        {% else %}
+            <button class="btn btn-block" disabled>Already Booked</button>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="empty">No rooms match your search. Try different dates or a different room name.</p>
+    {% endfor %}
+</div>
+{% endblock %}
