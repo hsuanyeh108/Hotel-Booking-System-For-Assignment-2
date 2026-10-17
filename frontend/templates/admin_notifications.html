@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<h2>Notifications</h2>
+<p style="color:#666; margin-bottom: 16px;">
+    Controlled by a Singleton (<code>NotificationContract</code>) — every part of the app
+    shares this exact same configuration object. Turning a channel off here takes effect
+    immediately for the next booking status change.
+</p><!-- The category name: NotificationContract, this part show for user -->
+
+<form class="panel" method="POST"><!-- Did not write action, means send back to current link, /admin/notification-settings POST branch(admin_routes.py) -->
+    <label style="display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" name="email_enabled" {% if settings.email_enabled %}checked{% endif %}>
+        Email notifications enabled<!-- settings is backend return setting dict, settings.email_enabled access the value of dict, if is real then add checked, page open is already check situation -->
+    </label><!-- name="email_enabled" compare to backend  -->
+    <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+        <input type="checkbox" name="log_enabled" {% if settings.log_enabled %}checked{% endif %}>
+        Server log notifications enabled<!-- settings is backend return setting dict, settings.log_enabled access the value of dict, if is real then add checked, page open is already check situation -->
+    </label><!-- name="log_enabled" compare to backend  -->
+    <div class="form-actions" style="margin-top:16px;">
+        <button type="submit" class="btn">Save Settings</button><!-- Save Settings button -->
+    </div>
+</form>
+<!-- The latest notification records  -->
+<h3 style="margin-top: 24px;">Recent Notifications (latest 10)</h3>
+<table class="data-table"><!-- This is the same format as style.css table label -->
+    <thead>
+        <tr><th>Channel</th><th>Detail</th></tr>
+    </thead>
+    <tbody>
+        {% for entry in recent_log %}<!-- recent log return by backend  -->
+        <tr>
+            <td>{{ entry.channel }}</td><!-- email records content are in body, logs are in message  -->
+            <td>{{ entry.get('body') or entry.get('message') }}</td>
+        </tr>
+        {% else %}<!-- If no records, then shown No notifications sent yet -->
+        <tr><td colspan="2">No notifications sent yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

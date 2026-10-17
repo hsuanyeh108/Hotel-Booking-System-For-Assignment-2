@@ -152,16 +152,26 @@ def confirm_booking_api(booking_id):
 #Admin Notification Settings(Singleton)
 #Read Notification
 @api_bp.route("/admin/notifications", methods=["GET"])
-@TokenDecorator
-def get_notifications():  
-    pass  
+@TokenDecorator #The "/api" prefix has been added, should be "/api/admin/notifications"
+def get_notifications():  #Check the token, if no will enter error, is success will get here
+    return jsonify(NotificationContract().dict()), 200
+    #Every time will call the same object(Singleton). copy the dictionary and transfer to Json
 
 #Admin Notification Settings(Singleton)
 #Update Notification
 @api_bp.route("/admin/notifications", methods=["PUT"])
-@TokenDecorator
-def update_notifications():
-    pass
+@TokenDecorator #same url, using method PUT, and check the token first
+def update_notifications(): #If the format is wrong, will not return error, will return None
+    data = request.get_json(silent=True) or {} #If None, represent as empty dictionary
+    allowed_keys = {"email_enabled", "log_enabled", "sender_email"} #list the form that can be updated
+    unknown_keys = set(data.keys()) - allowed_keys #data.keys() means the user return all field, minus the white list will be the unknown fields
+    if unknown_keys: #If there is unknown fields, it will  return 400 and list the fields that are unknown
+        return jsonify({"message": f"Unknown setting(s): {sorted(unknown_keys)}"}), 400
+
+    config = NotificationContract() #Get the whole system shared setting object(Singleton)
+    for key, value in data.items(): #Fill in the key and value in the setting
+        config.set_setting(key, value)#set_setting will use the shared object, so next time when notification, it will use new setting
+    return jsonify(config.dict()), 200
 
 #Serialize Tools(For MongoDB ObjectId/datetime change to String, otherwise jsonify will return error)
 def serialize_room(room):
