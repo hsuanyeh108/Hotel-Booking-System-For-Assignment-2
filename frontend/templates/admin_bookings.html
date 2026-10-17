@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Manage Bookings{% endblock %}
+{% block content %}
+<div class="page-head"><!-- left is title, right is the button back to dashboard, by style.css -->
+    <h2>Admin - Manage Bookings</h2>
+    <a class="btn btn-grey" href="{{ url_for('admin.dashboard') }}">Back to Dashboard</a>
+</div>
+
+<div class="table-wrap"><!-- If table is too width can scroll it-->
+<table>
+    <thead>
+        <tr>
+            <th>Booking ID</th>
+            <th>Guest Name</th>
+            <th>Room Type</th>
+            <th>Check-in / Check-out</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in bookings %} <!-- bookings is admin_routes.py returns lists -->
+        <tr> <!-- b is each order in the loop -->
+            <td>BK-{{ b.booking_no }}</td> <!-- BK is the word of prefix, and back is the database number -->
+            <!-- b.booking_no access the value of dict -->
+            <td>{{ b.guest_name }}<br><small style="color:#64748B;">{{ b.guest_phone }}</small></td>
+            <td>{{ b.room_type }}</td><!-- guest booking name, phone, room type, check in and check out date-->
+            <td>{{ b.check_in }} → {{ b.check_out }}</td>
+            <td><span class="{{ b.status|status_class }}">{{ b.status }}</span></td><!-- use app.py filter to turn the situation class color -->
+            <td>
+                {% if b.status == 'Pending' %} <!-- Only Pending will shown confirm booking -->
+                <form class="inline-form" method="POST" action="{{ url_for('admin.confirm_booking', booking_id=b._id) }}"> <!-- b._id is MongoDB's id -->
+                    <button type="submit" class="btn btn-green btn-sm">Confirm</button> <!-- booking_id= fill in routes /bookings/<booking_id>/confirm variable -->
+                </form>
+                {% endif %}
+                {% if b.status in ['Pending', 'Confirmed'] %}<!-- The booking have not done will shown cancel -->
+                <form class="inline-form" method="POST" action="{{ url_for('admin.admin_cancel_booking', booking_id=b._id) }}"
+                      onsubmit="return confirm('Cancel booking BK-{{ b.booking_no }}?');"><!-- Will jump up the flash message before submit, if click cancel will return False, the form will not been send -->
+                    <button type="submit" class="btn btn-red btn-sm">Cancel</button>
+                </form>
+                {% endif %}
+                {% if b.status not in ['Pending', 'Confirmed'] %}—{% endif %} <!-- Already Cancelled order, the operation will display "-" -->
+            </td>
+        </tr>
+        {% else %} <!-- behind for, means when list is empty, it will show No bookings yet -->
+        <tr><td colspan="6" class="empty">No bookings yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

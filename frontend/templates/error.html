@@ -1,0 +1,9 @@
+{% extends "base.html" %} <!-- Inherit from base.html-->
+{% block title %}Not found{% endblock %}
+{% block content %}
+<div class="login-card" style="text-align:center;">
+    <h2>{{ message }}</h2> <!-- Display {{message}} from app.py-->
+    <a class="btn" href="{{ url_for('guest.home') }}">Back to Search</a>
+</div><!-- Link back the button in home page-->
+<!-- If Admin links cannot found, will using this page-->
+{% endblock %}
