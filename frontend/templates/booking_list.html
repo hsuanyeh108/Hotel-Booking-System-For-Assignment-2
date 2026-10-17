@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Find My Booking{% endblock %}
+{% block content %}
+<h2>Find My Booking</h2>
+
+<form class="lookup-form" method="POST" action="{{ url_for('guest.my_bookings') g}}">
+    <input type="text" name="booking_no" placeholder="Booking ID (e.g. BK-1234)" value="{{ request.form.et('booking_no', '') }}" aria-label="Booking ID">
+    <input type="text" name="guest_phone" placeholder="Phone Number" value="{{ request.form.get('guest_phone', '') }}" aria-label="Phone number">
+    <button type="submit" class="btn">Search</button>
+</form>
+
+{% if booking %}
+<div class="room-grid">
+    <div class="room-card">
+        <div>
+            <img src="{{ booking.img|img_src }}" alt="{{ booking.room_type }}">
+            <span class="tag tag-info">Booking ID: BK-{{ booking.booking_no }}</span>
+            <h3>{{ booking.room_type }}</h3>
+            <p>Guest: {{ booking.guest_name }}</p>
+            <p>Phone: {{ booking.guest_phone }}</p>
+            <p>{{ booking.check_in }} → {{ booking.check_out }}</p>
+            <div class="price">{{ booking.total_price|aud }} total</div>
+            <p>Status: <span class="{{ booking.status|status_class }}">{{ booking.status }}</span></p>
+        </div>
+        <div class="card-actions">
+            <a class="btn btn-sm" href="{{ url_for('guest.booking_success', booking_id=booking._id) }}">View</a>
+            {% if booking.status in ['Pending', 'Confirmed'] %}
+            <form class="inline-form" method="POST" action="{{ url_for('guest.cancel', booking_id=booking._id) }}"
+                  onsubmit="return confirm('Cancel this booking?');" style="display:flex;">
+                <button type="submit" class="btn btn-red btn-sm" style="flex:1;">Cancel</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% elif searched %}
+<p class="status-cancelled">No matching booking found. Please check your Booking ID and Phone Number.</p>
+{% endif %}
+{% endblock %}

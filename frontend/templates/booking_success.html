@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Booking BK-{{ booking.booking_no }}{% endblock %}
+{% block content %}
+<div class="success-banner">Booking Successful ! Thanks for your booking !</div>
+
+<h2>Booking Details</h2>
+<div class="panel detail-list" style="margin-top: 15px;">
+    <div class="booking-id-box">
+        <div>
+            <small>Your Booking ID</small>
+            <strong>BK-{{ booking.booking_no }}</strong>
+        </div>
+        <button type="button" class="btn btn-sm" onclick="copyBookingId('BK-{{ booking.booking_no }}')">Copy ID</button>
+    </div>
+
+    <p><strong>Guest Name:</strong> {{ booking.guest_name }}</p>
+    <p><strong>Phone:</strong> {{ booking.guest_phone }}</p>
+    <p><strong>Email:</strong> {{ booking.guest_email }}</p>
+    <p><strong>Room Type:</strong> {{ booking.room_type }}</p>
+    <p><strong>Check-in / Check-out:</strong> {{ booking.check_in }} → {{ booking.check_out }} ({{ booking.nights }} night{{ '' if booking.nights == 1 else 's' }})</p>
+    <p><strong>Price:</strong> {{ booking.price|aud }}/per night</p>
+    <p><strong>Total Price:</strong> {{ booking.total_price|aud }}</p>
+    <p><strong>Status:</strong> <span class="{{ booking.status|status_class }}">{{ booking.status }}</span></p>
+
+    <div class="notice-ok">
+        <p style="font-weight: 700; margin-bottom: 4px;">✉️ Confirmation Sent!</p>
+        <p>A booking confirmation email has been sent to <strong>{{ booking.guest_email }}</strong>
+           and SMS notification to <strong>{{ booking.guest_phone }}</strong>.
+           Please save your Booking ID for future search.</p>
+    </div>
+</div>
+
+<a class="btn" href="{{ url_for('guest.home') }}">Back to Search</a>
+{% endblock %}
