@@ -7,8 +7,8 @@
 <div class="panel detail-list" style="margin-top: 15px;">
     <div class="booking-id-box">
         <div>
-            <small>Your Booking ID</small>
-            <strong>BK-{{ booking.booking_no }}</strong>
+            <small>Your Booking ID (click the ID to selct it, then press Ctrl+C / Cmd+C to copy)</small>
+            <strong class="copy-all">BK-{{ booking.booking_no }}</strong>
         </div>
         <button type="button" class="btn btn-sm" onclick="copyBookingId('BK-{{ booking.booking_no }}')">Copy ID</button>
     </div>

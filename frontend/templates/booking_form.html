@@ -14,7 +14,7 @@
             <input type="date" id="check_in" name="check_in" value="{{ check_in }}" min="{{ today }}" required>
         </label>
         <label>Check-out
-            <input type="date" id="check_out" name="check_out" value="{{ check_out }}" min="{{ today }}" required>
+            <input type="date" id="check_out" name="check_out" value="{{ check_out }}" min="{{ (check_in or today) | next_day }}" required>
         </label>
     </div>
 
