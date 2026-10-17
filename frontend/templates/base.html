@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- To show the right size on mobile-->
+    <title>{% block title %}Hotel Booking System{% endblock %}</title>
+    <!-- If the page has no title, show "Hotel Booking System" as default-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- consist the /static/style.css url link-->
+</head>
+<body>
+    <header>
+        <h1><a href="{{ url_for('guest.home') }}">Hotel Booking System</a></h1>
+        <!-- Title link to the home page-->
+
+        <!-- search by room name(after submit, back to home page, using url parameter ?q=...)-->
+        <!-- Only Guest will use, Admin or other page did not have this variable-->
+        <form class="header-search" method="GET" action="{{ url_for('guest.home') }}">
+            <input type="text" name="q" value="{{ q or '' }}" placeholder="Search rooms..." aria-label="Search rooms by name">
+            <!-- Jinja will seen as empty string, so add or ''-->
+            {% if check_in and check_out %}
+                <input type="hidden" name="check_in" value="{{ check_in }}">
+                <input type="hidden" name="check_out" value="{{ check_out }}">
+                <!-- Same as above, have dates then input hidden field-->
+            {% endif %}
+        </form>
+
+        <nav>
+            <a class="nav-btn" href="{{ url_for('guest.home') }}">Search Rooms</a>
+            <a class="nav-btn" href="{{ url_for('guest.my_bookings') }}">Guest Booking List</a>
+            {% if session.get('admin_logged_in') %}
+            <!-- Jinja can directly read Flask session, if already logged in then show Admin Dashboard and Log Out-->
+                <a class="nav-btn" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+                <a class="nav-btn" href="{{ url_for('admin.logout') }}">Log Out</a>
+            {% else %} 
+            <!-- Jinja can directly read Flask session, if not logged in then show Admin Login page-->
+                <a class="nav-btn" href="{{ url_for('admin.login') }}">Admin Dashboard</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        <!-- Access all flash messages, after accessed, the messages will be removed, so only shown once-->
+            {% for category, message in messages %} <!-- Every message has category and message-->
+                <p class="flash flash-{{ 'success' if category == 'success' else 'error' }}">{{ message }}</p>
+            {% endfor %}<!-- Category is success, use green, else error, use red-->
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

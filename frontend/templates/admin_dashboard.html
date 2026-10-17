@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<div class="admin-dashboard-grid"> <!-- The dashboard-card -->
+    <!-- The admin manage bookings-card -->
+     <!-- The image link to static/img/Booking.jpg -->
+    <a class="dashboard-card" href="{{ url_for('admin.manage_bookings') }}">
+        <img src="{{ url_for('static', filename='img/Booking.jpg') }}" alt="Bookings">
+        <div class="dashboard-info">
+            <span class="count">{{ booking_count }}</span><!-- admin_routes.py return the number -->
+            <span class="label">Bookings</span>
+        </div>
+    </a>
+    <!-- The admin manage rooms-card -->
+    <!-- The image link to static/img/Listing.jpg -->
+    <a class="dashboard-card" href="{{ url_for('admin.manage_rooms') }}">
+        <img src="{{ url_for('static', filename='img/Listing.jpg') }}" alt="Listings">
+        <div class="dashboard-info">
+            <span class="count">{{ room_count }}</span><!-- admin_routes.py return the number -->
+            <span class="label green">Room Type Listings</span>
+        </div>
+    </a>
+</div>
+<p style="margin-top:16px;">
+    <a class="nav-btn" href="{{ url_for('admin.notification_settings') }}">Notification Settings</a>
+</p><!-- url link to admin notification settings-->
+{% endblock %}

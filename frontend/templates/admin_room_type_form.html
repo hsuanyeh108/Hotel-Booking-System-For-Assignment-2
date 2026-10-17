@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if is_edit else 'Add' }} Room Type{% endblock %}
+<!-- is_edit is the backend admin_routes.py return the Bollin value, to decide the title is Edit or Add -->
+{% block content %}
+<h2>{{ 'Edit Room Type' if is_edit else 'Add New Room Type' }}</h2>
+<!-- is_edit is the backend admin_routes.py return the Bollin value, to decide the title is Edit Room Type or Add New Room Type -->
+<form class="panel" style="max-width: 520px;" method="POST" 
+      action="{{ url_for('admin.edit_room', room_id=room._id) if is_edit else url_for('admin.new_room') }}">
+    <label>Room Name:<!-- need room_id when send to edit link, this is the reason why backend should add _id ; add new send to add new link -->
+        <input type="text" name="room_type" value="{{ room.get('room_type', '') }}" required placeholder="e.g. Deluxe Suite">
+    </label><!-- fill in the values into fields, when add new the fields is empty dict, return empty string-->
+    <label>Price per night (A$):
+        <input type="number" name="price" value="{{ room.get('price', '') }}" required min="1" step="0.01" placeholder="e.g. 150">
+    </label><!-- Only can fill in number, the smallest is 1, and the smallest unit is 0.01 -->
+    <label>Description / Facilities:
+        <textarea name="description" rows="3" placeholder="e.g. Free Wi-Fi, King Bed, Breakfast included">{{ room.get('description', '') }}</textarea>
+    </label><!-- Multiple textarea, default value write in middle of label, is not value attribute -->
+    <label>Image path or URL (Optional):
+        <input type="text" name="img" value="{{ room.get('img', '') }}" placeholder="img/Hotel Single Room.jpg">
+    </label><!-- can fill img/xxx.jpg or complete link, if is empty then backend use default image -->
+    <div class="form-actions">
+        <button type="submit" class="btn">Save Room</button><!-- Save Room submit, and cancel link back admin manage room type list -->
+        <a class="btn btn-grey" href="{{ url_for('admin.manage_rooms') }}">Cancel</a>
+    </div>
+</form>
+{% endblock %}
