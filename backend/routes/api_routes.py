@@ -7,6 +7,7 @@ from backend.models.BookingManager import booking_manager
 from backend.services.BookingFacade import booking_facade
 from backend.services.TokenDecorator import AuthenticationTokenService, TokenDecorator
 from backend.services.NoficationContract import NotificationContract
+from backend.services.PricingRuleFactory import PricingRuleFactory
 
 #name "api" bluewprint, add "/api" prefix
 api_bp = Blueprint("api", __name__)
@@ -130,6 +131,15 @@ def delete_room_api(room_id):
     return jsonify({"message": "Room deleted"}), 200  
     #If pass, delete the room, return 200
 
+
+
+#Pricing pattern
+@api_bp.route("/pricing/rules", methods=["GET"])
+def list_pricing_rutes():
+    return jsonify(PricingRuleFactory.list_rule()), 200
+
+
+
 #All Bookings
 @api_bp.route("/bookings", methods=["GET"])
 @TokenDecorator
@@ -206,13 +216,14 @@ def list_rooms():
 @api_bp.route("/bookings", methods=["POST"])
 def create_booking():
     data = request.args.get_json(silent=True) or {}
-    booking_id, error = book_room(
+    booking_id, error = PricingRuleFactory.book_room(
         room_id = data.get("room_id"),
         guest_name = data.get("guest_name", ""),
         guest_email = data.get("guest_email", ""),
         guest_phone = data.get("guest_phone", ""),
         check_in = data.get("check_in", ""),
         check_out = data.get("check_out", ""),
+        pricing_type= data.get("pricing_type", "standard"),
     )
     if error:
         # date conflict set 409, others set 400
