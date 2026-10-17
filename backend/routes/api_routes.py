@@ -276,6 +276,3 @@ def cancel_booking(booking_id):
     return jsonify(serialize_booking(booking_manager.get_booking_by_id(booking_id))), 200
 
 
-@api_bp.route("/price", methods=["GET"]) #non function
-def price():
-    pass
