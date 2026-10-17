@@ -3,8 +3,8 @@
 {% block content %}
 <h2>Find My Booking</h2>
 
-<form class="lookup-form" method="POST" action="{{ url_for('guest.my_bookings') g}}">
-    <input type="text" name="booking_no" placeholder="Booking ID (e.g. BK-1234)" value="{{ request.form.et('booking_no', '') }}" aria-label="Booking ID">
+<form class="lookup-form" method="POST" action="{{ url_for('guest.my_bookings') }}">
+    <input type="text" name="booking_no" placeholder="Booking ID (e.g. BK-1234)" value="{{ request.form.get('booking_no', '') }}" aria-label="Booking ID">
     <input type="text" name="guest_phone" placeholder="Phone Number" value="{{ request.form.get('guest_phone', '') }}" aria-label="Phone number">
     <button type="submit" class="btn">Search</button>
 </form>

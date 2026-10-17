@@ -9,7 +9,7 @@
     <label>Check-out
         <input type="date" id="check_out" name="check_out" value="{{ check_out }}" min="{{ (check_in or today) | next_day }}">
     </label>
-    {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+    {% if query %}<input type="hidden" name="query" value="{{ query }}">{% endif %}
     <button type="submit" class="btn">Search Rooms</button>
 </form>
 

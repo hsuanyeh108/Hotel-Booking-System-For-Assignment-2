@@ -86,7 +86,7 @@ def create_room():
         "img": data.get("img") or DEFAULT_IMG,
     }
     #Consist to dictionary, no fill using empty string, no image use default image
-    room_id = room_manager.add(room_data)
+    room_id = room_manager.add_room(room_data)
     return jsonify({"id": room_id, **room_data}), 201   
     #write in database, return 201, get ID
     #**room_data means unpack the dictionary
@@ -96,7 +96,7 @@ def create_room():
 @TokenDecorator
 def update_room_api(room_id):
     data = request.get_json(silent=True) or {}
-    room = room_manager.get_by_id(room_id)
+    room = room_manager.get_room_by_id(room_id)
     if not room:
         return jsonify({"message": "Room not found"}), 404
     #room_id is the variable of the url, cannot find then return 404
@@ -121,7 +121,7 @@ def update_room_api(room_id):
 @api_bp.route("/rooms/<room_id>", methods=["DELETE"])
 @TokenDecorator
 def delete_room_api(room_id):
-    if not room_manager.get_by_id(room_id):
+    if not room_manager.get_room_by_id(room_id):
         return jsonify({"message": "Room not found"}), 404
     if room_manager.has_active_booking(room_id):
         return jsonify({"message": "Cannot delete a room type with active bookings"}), 409
@@ -144,7 +144,7 @@ def list_pricing_rutes():
 @api_bp.route("/bookings", methods=["GET"])
 @TokenDecorator
 def list_bookings():
-    return jsonify([serialize_booking(b) for b in booking_manager.get_all()]), 200
+    return jsonify([serialize_booking(b) for b in booking_manager.get_all_order()]), 200
 #Get all bookings,use Json serialize booking (list comprehension) to consist back 
 #need token, booking include name, email, phone
 
@@ -152,11 +152,11 @@ def list_bookings():
 @api_bp.route("/bookings/<booking_id>/confirm", methods=["PUT"])
 @TokenDecorator
 def confirm_booking_api(booking_id):
-    if not booking_manager.get_by_id(booking_id):
+    if not booking_manager.get_booking_by_id(booking_id):
         return jsonify({"message": "Booking not found"}), 404
     #use booking_id to find the booking, if not found, return 404
     booking_facade.confirm_booking(booking_id)
-    return jsonify(serialize_booking(booking_manager.get_by_id(booking_id))), 200
+    return jsonify(serialize_booking(booking_manager.get_booking_by_id(booking_id))), 200
     #find then call facade(change status and send notification)
     #read again the booking latest status
     #compore to web, only "Pending" can be confirmed, this API no check, already cancelled bookings can also confirmed
@@ -225,8 +225,8 @@ def list_rooms():
 
 @api_bp.route("/bookings", methods=["POST"])
 def create_booking():
-    data = request.args.get_json(silent=True) or {}
-    booking_id, error = PricingRuleFactory.book_room(
+    data = request.get_json(silent=True) or {}
+    booking_id, error =booking_facade.book_room(
         room_id = data.get("room_id"),
         guest_name = data.get("guest_name", ""),
         guest_email = data.get("guest_email", ""),
@@ -252,6 +252,7 @@ def my_booking():
     if not booking_no or not phone:
         return jsonify({"message": "booking number and phone query are required."}), 400
     result = []
+    booking = booking_manager.get_booking_by_numAndPhone(booking_no, phone)
     for booking in booking_manager.get_booking_by_numAndPhone(booking_no, phone):
         result.append(serialize_booking(booking))
     return jsonify(result), 200
@@ -267,12 +268,12 @@ def get_booking(booking_id):
 
 
 @api_bp.route("/bookings/<booking_id>/cancel", methods=["PUT"])
-def cancel_booking(booking_id):
+def cancel_booking_api(booking_id):
     if not booking_manager.get_booking_by_id(booking_id):
         return jsonify({"message": "Booking not found"}), 404
     
-    data =request.args.get_json(silent=True) or {}
-    cancel_booking(booking_id, cancel_by=data.get("cancelled_by", "Guest"))
+    data =request.get_json(silent=True) or {}
+    booking_facade.cancel_booking(booking_id, cancelled_by=data.get("cancelled_by", "Guest"))
     return jsonify(serialize_booking(booking_manager.get_booking_by_id(booking_id))), 200
 
 

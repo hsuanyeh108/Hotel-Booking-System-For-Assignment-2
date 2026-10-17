@@ -30,7 +30,7 @@
     <label>Pricing Option:
         <select name="pricing_type">
             {% for rule in pricing_rules %}
-            <option value="{{ rule.code }}" {% if form.get('pricing_type', 'standard') == rule.code %}selected{% endif %}>
+            <option value="{{ rule.type }}" {% if form.get('pricing_type', 'standard') == rule.type %}selected{% endif %}>
                 {{ rule.label }}
             </option>
             {% endfor %}

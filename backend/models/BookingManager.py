@@ -1,9 +1,9 @@
-import re
+
 from datetime import datetime, date, timezone
 from pymongo import ReturnDocument
 from backend.config import db
-from models.tools import change_to_objectId
-from models.RoomManager import room_manager
+from backend.models.tools import change_to_objectId
+from backend.models.RoomManager import room_manager
 
 
 
@@ -45,7 +45,7 @@ class BookingManager:
     
 
     def _create_next_booking_number(self,):
-        doc = counters_collection.find_one_and_update({"_id": "bookings"}, {"$inc": {"seq": 1}}, uspert=True, return_document=ReturnDocument.AFTER)
+        doc = counters_collection.find_one_and_update({"_id": "bookings"}, {"$inc": {"seq": 1}}, upsert=True, return_document=ReturnDocument.AFTER)
         return doc["seq"]
     
 
@@ -53,47 +53,9 @@ class BookingManager:
         booking_data = dict(booking_data)
         booking_data["booking_no"] = self._create_next_booking_number()
         booking_data["status"] = "Pending"
-        booking_data["create_at"] = datetime.now(timezone.utc)
+        booking_data["created_at"] = datetime.now(timezone.utc)
         result = bookings_collection.insert_one(booking_data)
         return str(result.inserted_id)
-
-
-    def book_room(self, room_id, guest_name, guest_email, guest_phone, check_in, check_out):
-        
-        if not all([guest_name, guest_email, guest_phone, check_in, check_out]):
-            return None, "Please fill in the complete booking information."
-
-        error = self.validate_dates(check_in, check_out)
-        if error:
-            return None, error
-
-        room = room_manager.get_room_by_id(room_id)
-        if not room:
-            return None, "Room not found. Please check your order information again."
-
-        if room_manager.booking_conflict(str(room["_id"]), check_in, check_out):
-            return None, "This room is already booked."
-
-
-
-        nights = self.count_nights(self, check_in,check_out)
-        total_price = round(room["price"] * nights, 2)
-        booking_id = self.create_booking(
-            {
-                "room_id": str(room_id),
-                "room_type": room["room_type"],
-                "price": room["price"],
-                "img": room.get("img"),
-                "guest_name": guest_name.strip(),
-                "guest_email": guest_email.strip(),
-                "guest_phone": guest_phone.strip(),
-                "check_in": check_in,
-                "check_out": check_out,
-                "nights": nights,
-                "total_price": total_price,
-
-            })
-        return booking_id, None
 
     
 
@@ -125,16 +87,19 @@ class BookingManager:
 # update data status
     def update_status(self, booking_id, new_status):
         id = change_to_objectId(booking_id)
-        if id is None:
+        if id is not None:
             return bookings_collection.update_one({"_id": id}, {"$set": {"status": new_status}})
 
 
     def cancel_booking(self, booking_id, cancelled_by="Guest"):
-        new_status = "Cancelled by Guest"
-        if cancelled_by == "Guest":
-            self.update_status(booking_id, new_status)
+        
+        if cancelled_by == "Admin":
+            new_status = "Cancelled by Admin"
         else:
-            "Cancelled by Admin."
+            new_status = "Cancelled by Guest"
+        self.update_status(booking_id, new_status)
+        return new_status
+       
 
 
 

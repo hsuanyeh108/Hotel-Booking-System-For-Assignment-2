@@ -8,6 +8,7 @@ from backend.services.BookingFacade import booking_facade
 from backend.services.LoginDecorator import LoginDecorator
 from backend.services.NoficationContract import NotificationContract
 from backend.services.NotificationService import notification_log
+from backend.models.RoomManager import room_manager, DEFAULT_IMG
 #import project's admin, rooms, bookings, booking facade, login decorator, notification contract, notification log
 
 admin_bp = Blueprint("admin", __name__)#build a "admin" blueprint
@@ -66,9 +67,9 @@ def register():
 @admin_bp.route("/dashboard")
 @LoginDecorator #The two decorator's sequence is important, if have not login will redirect to login page
 def dashboard():
-    bookings = booking_manager.get_all()
+    bookings = booking_manager.get_all_order()
     booking_count = len([b for b in bookings if b["status"] != "Cancelled by Guest"])
-    room_count = len(room_manager.get_all())
+    room_count = len(room_manager.get_all_rooms)
     return render_template("admin_dashboard.html", booking_count=booking_count, room_count=room_count)
     #Get all the room and booking data, return the dashboard
     #use list comprehension to filter the "Cancelled by Guest" booking, calculate number and room number
@@ -78,7 +79,7 @@ def dashboard():
 @admin_bp.route("/bookings")
 @LoginDecorator
 def bookings():
-    return render_template("admin_bookings.html", bookings=booking_manager.get_all())
+    return render_template("admin_bookings.html", bookings=booking_manager.get_all_order())
 #Get all bookings, return to dashboard to show
 
 #Confirm Bookings
@@ -86,7 +87,7 @@ def bookings():
 @admin_bp.route("/bookings/<booking_id>/confirm", methods=["POST"])
 @LoginDecorator
 def confirm_booking(booking_id):
-    booking = booking_manager.get_by_id(booking_id)
+    booking = booking_manager.get_booking_by_id(booking_id)
     if not booking:
         abort(404)
         #Cannot find this booking, return 404 error
@@ -96,7 +97,7 @@ def confirm_booking(booking_id):
     else:
         booking_facade.confirm_booking(booking_id)
         flash(f"Booking BK-{booking['booking_no']} confirmed.", "success")
-    return redirect(url_for("admin.manage_bookings"))  
+    return redirect(url_for("admin.bookings"))  
     #call Fcade, can change the status and send notification at the same time, and redirect to manage list
 
 #Cancel Bookings
@@ -104,7 +105,7 @@ def confirm_booking(booking_id):
 @admin_bp.route("/bookings/<booking_id>/cancel", methods=["POST"])
 @LoginDecorator
 def cancel_booking(booking_id):    
-    booking = booking_manager.get_by_id(booking_id)
+    booking = booking_manager.get_booking_by_id(booking_id)
     if not booking:
         abort(404)
         #Cannot find this booking, return 404 error
@@ -114,7 +115,7 @@ def cancel_booking(booking_id):
     else:
         booking_facade.cancel_booking(booking_id, cancelled_by="Admin")
         flash(f"Booking BK-{booking['booking_no']} cancelled.", "success")
-    return redirect(url_for("admin.manage_bookings"))
+    return redirect(url_for("admin.bookings"))
     #call Fcade, can change the status and send notification at the same time, and redirect to manage list
 
 #Notification Settings(Singleton)
@@ -147,25 +148,28 @@ def notifications():
 
 #Room Types Management
 def room_types():
-    room_types = request.form.getlist("room_type", "").strip()
-    price_raw = request.form.getlist("price", "").strip()
+    room_types = request.form.get("room_type", "").strip()
+    price_raw = request.form.get("price", "").strip()
     #read all room types and price, return to dashboard
     if not room_types or not price_raw:
         return None, "Room name and price are required."
     #If any of them in the form is empty, return None and message
     try:
-        price = [float(price) for price in price_raw]
+        price = float(price_raw)
     except ValueError:
         return None, "Price must be a number, e.g. 150."
     #Price must be a number
-    if any(price <= 0 for price in price):
+    if price <= 0:
         return None, "Price must be greater than 0."
     #Price must be greater than 0
+    img = request.form.get("img", "").strip()
+    if not img:
+        img = DEFAULT_IMG
     return {
         "room_types": room_types,
         "price": price,
-        "description": request.form.getlist("description", "").strip(),
-        "img": request.form.getlist("img", "").strip() or DEFAULT_IMG,
+        "description": request.form.get("description", "").strip(),
+        "img": img,
     }, None 
     #Return the form data with room types, price, description and image
 
@@ -174,7 +178,7 @@ def room_types():
 @admin_bp.route("/rooms")
 @LoginDecorator
 def manage_rooms():
-    return render_template("admin_rooms.html", rooms=room_manager.get_all())
+    return render_template("admin_rooms.html", rooms=room_manager.get_all_rooms())
 
 #Admin Manage Rooms- Add new rooms
 #If the user is not logged in, redirect to login
@@ -187,7 +191,7 @@ def new_room():
             flash(error, "error")
             return render_template("admin_room_form.html", room=request.form, is_edit=False), 400
         #GET show empty form, is_edit=False, POST show the form, have error show flash and store the content user fill in 
-        room_manager.add(room_data)
+        room_manager.add_room(room_data)
         flash("Room type added.", "success")
         return redirect(url_for("admin.manage_rooms"))
     return render_template("admin_room_form.html", room={}, is_edit=False)
@@ -198,7 +202,7 @@ def new_room():
 @admin_bp.route("/rooms/<room_id>/edit", methods=["GET", "POST"])
 @LoginDecorator
 def edit_room(room_id):
-    room = room_manager.get_by_id(room_id)
+    room = room_manager.get_room_by_id(room_id)
     if not room:
         abort(404)
     #Cannot find this room, return 404 error
@@ -220,10 +224,10 @@ def edit_room(room_id):
 @admin_bp.route("/rooms/<room_id>/delete", methods=["POST"])
 @LoginDecorator
 def delete_room_route(room_id):
-    if not room_manager.get_by_id(room_id):
+    if not room_manager.get_room_by_id(room_id):
         abort(404)
     #Use room_id Cannot find this room, return 404 error    
-    if room_manager.has_active_booking(room_id):
+    if room_manager.get_available_rooms(room_id):
         flash("Cannot delete a room type with active bookings.", "error")
     #If this room has active booking, cannot delete, flash message
     else:

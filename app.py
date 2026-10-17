@@ -3,10 +3,9 @@ from datetime import date, timedelta #For generate today's date
 
 from flask import Flask, render_template, url_for
 #import flask for the whole system to use, render_template for 404 page, url_for for consist the image link
-from backend.models.RoomManager import RoomManager, DEFAULT_IMG
+from backend.models.RoomManager import room_manager, DEFAULT_IMG
 
-room_manager = RoomManager()
-#room_manager.set_defaults()
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")

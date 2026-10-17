@@ -34,7 +34,7 @@
                 </form>
                 {% endif %}
                 {% if b.status in ['Pending', 'Confirmed'] %}<!-- The booking have not done will shown cancel -->
-                <form class="inline-form" method="POST" action="{{ url_for('admin.admin_cancel_booking', booking_id=b._id) }}"
+                <form class="inline-form" method="POST" action="{{ url_for('admin.cancel_booking', booking_id=b._id) }}"
                       onsubmit="return confirm('Cancel booking BK-{{ b.booking_no }}?');"><!-- Will jump up the flash message before submit, if click cancel will return False, the form will not been send -->
                     <button type="submit" class="btn btn-red btn-sm">Cancel</button>
                 </form>

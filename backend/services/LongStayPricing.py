@@ -13,5 +13,5 @@ class LongStayPricing:
         total = base_price * nights
         if nights >= 7:
             total = total *0.9
-            return round(total, 2)
+        return round(total, 2)
             

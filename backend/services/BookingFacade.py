@@ -1,7 +1,7 @@
-from PricingRuleFactory import PricingRuleFactory
+from backend.services.PricingRuleFactory import PricingRuleFactory
 from backend.models.RoomManager import room_manager
 from backend.models.BookingManager import booking_manager
-
+from backend.services.NotificationService import NotificationService
 
 
 
@@ -59,6 +59,17 @@ class BookingFacade:
         booking_id = booking_manager.create_booking(booking_data)
 
         return booking_id, None
+
+    def confirm_booking(self, booking_id):
+        booking_manager.update_status(booking_id, "Confirmed")
+        booking = booking_manager.get_booking_by_id(booking_id)
+        NotificationService().status_change(booking, "Confirmed")
+
+
+    def cancel_booking(self, booking_id, cancelled_by="Guest"):
+        new_status = booking_manager.cancel_booking(booking_id, cancelled_by)
+        booking = booking_manager.get_booking_by_id(booking_id)
+        NotificationService().status_change(booking, new_status)
 
 
 booking_facade = BookingFacade(room_manager, booking_manager)

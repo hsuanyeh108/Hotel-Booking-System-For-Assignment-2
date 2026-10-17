@@ -72,7 +72,7 @@ class RoomManager:
     
 # search only available rooms
     def search_available_rooms(self, check_in, check_out, room_type=None):
-        rooms = self.get_availabe_rooms(check_in, check_out, room_type)
+        rooms = self.get_available_rooms(check_in, check_out, room_type)
         result = []
         for room in rooms:
             if room["available"]:

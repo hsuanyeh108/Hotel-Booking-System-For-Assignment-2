@@ -4,7 +4,7 @@ from backend.models.RoomManager import room_manager
 from backend.models.BookingManager import booking_manager
 from backend.models.tools import validate_dates
 from services.BookingFacade import BookingFacade
-from services.PricingRuleFactory import PricingRuleFactory, DEFAULT_PRICING_RULE
+from services.PricingRuleFactory import PricingRuleFactory
 
 
 guest_bp = Blueprint("guest", __name__)
@@ -46,7 +46,7 @@ def book(room_id):
             guest_phone =form.get("guest_phone", ""),
             check_in = form.get("check_in", ""),
             check_out = form.get("check_out", ""),
-            pricing_rules = form.get("pricing_type", DEFAULT_PRICING_RULE)
+            pricing_rules = form.get("pricing_rule", "")
         )
         if error:
             flash(error, "error")
@@ -98,4 +98,4 @@ def cancel_booking(booking_id):
     else:
         cancel_booking(booking_id, cancelled_by="Guest")
         flash(f"Booking BK-{booking['booking_no']} has been cancelled.", "success")
-    return redirect(url_for("guest.my_bookings"))
+    return redirect(url_for("guest.cancel"))
