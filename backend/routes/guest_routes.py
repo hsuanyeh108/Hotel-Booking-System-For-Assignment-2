@@ -3,6 +3,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from backend.models.RoomManager import room_manager
 from backend.models.BookingManager import booking_manager
 from backend.models.tools import validate_dates
+from services.BookingFacade import BookingFacade
+from services.PricingRuleFactory import PricingRuleFactory, DEFAULT_PRICING_RULE
 
 
 guest_bp = Blueprint("guest", __name__)
@@ -33,26 +35,29 @@ def book(room_id):
     if not room:
         abort(404)
 
+    pricing_rules = PricingRuleFactory.list_rule()
+
     if request.method == "POST":
         form = request.form
-        booking_id, error = book_room(
+        booking_id, error = BookingFacade.book_room(
             room_id = room_id,
             guest_name = form.get("guest_name", ""),
             guest_email = form.get("guest_email", ""),
             guest_phone =form.get("guest_phone", ""),
             check_in = form.get("check_in", ""),
             check_out = form.get("check_out", ""),
+            pricing_rules = form.get("pricing_type", DEFAULT_PRICING_RULE)
         )
         if error:
             flash(error, "error")
-            return render_template("booking_form.html", room=room, check_in = form.get("check_in", ""), check_out = form.get("check_out", ""), form=form), 400
+            return render_template("booking_form.html", room=room, check_in = form.get("check_in", ""), check_out = form.get("check_out", ""), form=form, pricing_rules=pricing_rules), 400
         return redirect(url_for("guest.booking_success", booking_id=booking_id))
 
     return render_template(
         "booking_form.html", room=room, 
         check_in = request.args.get("check_in", ""),
         check_out = request.args.get("check_out", ""),
-        form ={},
+        form ={},pricing_rules=pricing_rules
     )
 
 #booking success result

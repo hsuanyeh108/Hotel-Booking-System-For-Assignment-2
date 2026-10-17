@@ -27,6 +27,18 @@
     <label>Phone Number:
         <input type="tel" name="guest_phone" value="{{ form.get('guest_phone', '') }}" required placeholder="Enter your phone number">
     </label>
+    <label>Pricing Option:
+        <select name="pricing_type">
+            {% for rule in pricing_rules %}
+            <option value="{{ rule.code }}" {% if form.get('pricing_type', 'standard') == rule.code %}selected{% endif %}>
+                {{ rule.label }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+    <p style="font-size: 13px; color: #666; margin-top: -8px; margin-bottom: 16px;">
+        Long Stay Discount applies automatically for 7+ nights; Weekend Surcharge adds 20% to the whole stay.
+    </p>
 
     <div class="form-actions">
         <button type="submit" class="btn">Confirm Booking</button>
