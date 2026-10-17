@@ -118,10 +118,32 @@ def cancel_booking(booking_id):
     #call Fcade, can change the status and send notification at the same time, and redirect to manage list
 
 #Notification Settings(Singleton)
+#"/admin/notifications" is prefix of the url
+#GET method is for open the page, POST method is press the send button 
 @admin_bp.route("/notifications", methods=["GET", "POST"])
-@LoginDecorator
+@LoginDecorator #Login check, if no login, will return flash message and redirect to login page
 def notifications():
-    pass
+    config = NotificationContract()#Get the whole system shared setting object(Singleton)
+    if request.method == "POST": #Whether is sending the form, if is, then operate the code, not only jump off to the render_template
+        config.set_setting("email_enabled", request.form.get("email_enabled") == "on")
+        #read the form field, if checkbox is checked, will send out, default string "on", if no then get will get None
+        config.set_setting("log_enabled", request.form.get("log_enabled") == "on")
+        #read the form field, if checkbox is checked, will send out, default string "on", if no then get will get None
+        flash("Notification settings updated.", "success")
+        #success, show the flash message
+        return redirect(url_for("admin.notifications"))
+        #after update, return to the same page(Post-Redirect-Get)
+
+    return render_template(
+        "admin_notifications.html", 
+        settings=config.dict(),
+        recent_log=list(reversed(notification_log))[:10],
+    )
+    #GET open the page, using admin_notifications.html, current settings return to html, decide checkbox use default or not
+    #notification_log is NotificationService record list of the records that are sent, new is at the back 
+    #reversed means take the latest to the front
+    #use list because reversed return, should transfer back to list
+    #[:10] means take the first 10 records of notification
 
 #Room Types Management
 def room_types():
