@@ -107,11 +107,11 @@ class BookingManager:
     
 
 # guest check his own order
-    def get_booking_by_numAndPhone(self, booking_num, phone):
-        cleaned_input = str(booking_num).strip().upper().replace("BK-", "")
+    def get_booking_by_numAndPhone(self, booking_no, phone):
+        cleaned_input = str(booking_no).strip().upper().replace("BK-", "")
         if not cleaned_input.isdigit():
             return None
-        return bookings_collection.find_one({"booking_num": int(cleaned_input), "guest_phone": str(phone).strip(),})
+        return bookings_collection.find_one({"booking_no": int(cleaned_input), "guest_phone": str(phone).strip(),})
 
     
 
@@ -120,7 +120,7 @@ class BookingManager:
     
 
     def get_all_order(self):
-        return list(bookings_collection.find().sort("booking_num", 1))
+        return list(bookings_collection.find().sort("booking_no", 1))
 
 
 # update data status
