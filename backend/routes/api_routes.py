@@ -13,6 +13,10 @@ from backend.services.NoficationContract import NotificationContract
 #name "api" bluewprint, add "/api" prefix
 api_bp = Blueprint("api", __name__)
 
+
+
+#-------------------------------------SARAH-------------------------------------------
+
 #Authetication Register
 #Only accept POST
 @api_bp.route("/auth/register", methods=["POST"])
@@ -178,3 +182,80 @@ def serialize_booking(booking):
         booking["created_at"] = booking["created_at"].isoformat()
     return booking
 #booking process one more, build time is "datetime", change to ISO string, otherwise jsonify will return error
+
+
+#-------------------------------------JOSH-------------------------------------------
+
+
+@api_bp.route("/rooms", methods=["GET"])
+def list_rooms():
+    # guest can check the room without login
+    check_in = request.args.get("check_in")
+    check_out = request.args.get("check_out")
+    room_type = request.args.get("room_type")
+    
+    if check_in and check_out:
+        rooms = room_manager.search_available_rooms(check_in, check_out, room_type)
+    else:
+        rooms = room_manager.get_all_rooms()
+    result = []
+    for room in rooms:
+        result.append(serialize_room(room))
+
+    return jsonify(result), 200
+
+
+@api_bp.route("/bookings", methods=["POST"])
+def create_booking():
+    data = request.args.get_json(silent=True) or {}
+    booking_id, error = book_room(
+        room_id = data.get("room_id"),
+        guest_name = data.get("guest_name", ""),
+        guest_email = data.get("guest_email", ""),
+        guest_phone = data.get("guest_phone", ""),
+        check_in = data.get("check_in", ""),
+        check_out = data.get("check_out", ""),
+    )
+    if error:
+        # date conflict set 409, others set 400
+        if "already booked" in error:
+            status = 409
+        else:
+            status = 400
+        return jsonify({"message": error}), status
+    booking = booking_manager.get_booking_by_id(booking_id)
+    return jsonify(serialize_booking(booking)), 201 
+
+
+@api_bp.route("/booking/mine", methods=["GET"])
+def my_booking():
+    booking_no, phone = request.args.get("booking_no"), request.args.get("phone")
+    if not booking_no or not phone:
+        return jsonify({"message": "booking number and phone query are required."}), 400
+    result = []
+    for booking in booking_manager.get_booking_by_numAndPhone(booking_no, phone):
+        result.append(serialize_booking(booking))
+    return jsonify(result), 200
+    
+
+
+@api_bp.route("/bookings/<booking_id>", methods=["GET"])
+def get_booking(booking_id):
+    booking = booking_manager.get_booking_by_id(booking_id)
+    if not booking:
+        return jsonify({"message": "Booking not found"}), 404
+    return jsonify(serialize_booking(booking)), 200
+
+
+@api_bp.route("/bookings/<booking_id>/cancel", methods=["PUT"])
+def cancel_booking(booking_id):
+    if not booking_manager.get_booking_by_id(booking_id):
+        return jsonify({"message": "Booking not found"}), 404
+    data =request.args.get(silent=True) or {}
+    cancel_booking(booking_id, cancel_by=data.get("cancelled by", "Guest"))
+    return jsonify(serialize_booking(booking_manager.get_booking_by_id(booking_id))), 200
+
+
+@api_bp.route("/price", methods=["GET"]) #non function
+def price():
+    pass
