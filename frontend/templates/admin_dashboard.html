@@ -5,7 +5,7 @@
 <div class="admin-dashboard-grid"> <!-- The dashboard-card -->
     <!-- The admin manage bookings-card -->
      <!-- The image link to static/img/Booking.jpg -->
-    <a class="dashboard-card" href="{{ url_for('admin.manage_bookings') }}">
+    <a class="dashboard-card" href="{{ url_for('admin.bookings') }}">
         <img src="{{ url_for('static', filename='img/Booking.jpg') }}" alt="Bookings">
         <div class="dashboard-info">
             <span class="count">{{ booking_count }}</span><!-- admin_routes.py return the number -->
@@ -23,6 +23,6 @@
     </a>
 </div>
 <p style="margin-top:16px;">
-    <a class="nav-btn" href="{{ url_for('admin.notification_settings') }}">Notification Settings</a>
+    <a class="nav-btn" href="{{ url_for('admin.notifications') }}">Notification Settings</a>
 </p><!-- url link to admin notification settings-->
 {% endblock %}

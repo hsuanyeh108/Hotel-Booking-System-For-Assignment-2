@@ -1,12 +1,13 @@
 import os #using for reading environment variables
 from datetime import date, timedelta #For generate today's date
-
+from backend.routes.guest_routes import guest_bp
+from backend.routes.admin_routes import admin_bp
+from backend.routes.api_routes import api_bp
 from flask import Flask, render_template, url_for
 #import flask for the whole system to use, render_template for 404 page, url_for for consist the image link
-from backend.models.RoomManager import RoomManager, DEFAULT_IMG
+from backend.models.RoomManager import room_manager, DEFAULT_IMG
 
-room_manager = RoomManager()
-#room_manager.set_defaults()
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
@@ -21,10 +22,10 @@ def create_app():
 
     app.secret_key = os.getenv("SECRET_KEY")
 
-    #app.register_blueprint(guest_bp)
-    #app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(guest_bp)
+    app.register_blueprint(admin_bp, url_prefix="/admin")
     #The router is a box for collect different routes, add the prefix /admin at the front
-    #app.register_blueprint(api_bp, url_prefix="/api")
+    app.register_blueprint(api_bp, url_prefix="/api")
 
     @app.template_filter("aud")
     def aud(value): #Format aud filter, ex: 45.0 to A$45 ; 99.5 to A$99.50

@@ -1,14 +1,20 @@
-from flask import Blueprint, request, jsonify
 
+
+from flask import Blueprint, request, jsonify
 from backend.models.AdminManager import admin_manager
 from backend.models.RoomManager import room_manager, DEFAULT_IMG
 from backend.models.BookingManager import booking_manager
 from backend.services.BookingFacade import booking_facade
 from backend.services.TokenDecorator import AuthenticationTokenService, TokenDecorator
 from backend.services.NoficationContract import NotificationContract
+from backend.services.PricingRuleFactory import PricingRuleFactory
 
 #name "api" bluewprint, add "/api" prefix
 api_bp = Blueprint("api", __name__)
+
+
+
+#-------------------------------------SARAH-------------------------------------------
 
 #Authetication Register
 #Only accept POST
@@ -80,7 +86,7 @@ def create_room():
         "img": data.get("img") or DEFAULT_IMG,
     }
     #Consist to dictionary, no fill using empty string, no image use default image
-    room_id = room_manager.add(room_data)
+    room_id = room_manager.add_room(room_data)
     return jsonify({"id": room_id, **room_data}), 201   
     #write in database, return 201, get ID
     #**room_data means unpack the dictionary
@@ -90,7 +96,7 @@ def create_room():
 @TokenDecorator
 def update_room_api(room_id):
     data = request.get_json(silent=True) or {}
-    room = room_manager.get_by_id(room_id)
+    room = room_manager.get_room_by_id(room_id)
     if not room:
         return jsonify({"message": "Room not found"}), 404
     #room_id is the variable of the url, cannot find then return 404
@@ -115,9 +121,9 @@ def update_room_api(room_id):
 @api_bp.route("/rooms/<room_id>", methods=["DELETE"])
 @TokenDecorator
 def delete_room_api(room_id):
-    if not room_manager.get_by_id(room_id):
+    if not room_manager.get_room_by_id(room_id):
         return jsonify({"message": "Room not found"}), 404
-    if room_manager.has_active_booking(room_id):
+    if room_manager.check_active_rooms_booking(room_id):
         return jsonify({"message": "Cannot delete a room type with active bookings"}), 409
     #use room_id to find the room, if not found, return 404
     #If this room has active booking, cannot delete, return 409
@@ -125,11 +131,23 @@ def delete_room_api(room_id):
     return jsonify({"message": "Room deleted"}), 200  
     #If pass, delete the room, return 200
 
+
+
+#Pricing pattern
+@api_bp.route("/pricing/rules", methods=["GET"])
+def list_pricing_rutes():
+    return jsonify(PricingRuleFactory.list_rule()), 200
+
+
+
 #All Bookings
 @api_bp.route("/bookings", methods=["GET"])
 @TokenDecorator
 def list_bookings():
-    return jsonify([serialize_booking(b) for b in booking_manager.get_all()]), 200
+    result = []
+    for booking in booking_manager.get_all_order():
+        result.append(serialize_booking(booking))
+    return jsonify(result), 200
 #Get all bookings,use Json serialize booking (list comprehension) to consist back 
 #need token, booking include name, email, phone
 
@@ -137,11 +155,11 @@ def list_bookings():
 @api_bp.route("/bookings/<booking_id>/confirm", methods=["PUT"])
 @TokenDecorator
 def confirm_booking_api(booking_id):
-    if not booking_manager.get_by_id(booking_id):
+    if not booking_manager.get_booking_by_id(booking_id):
         return jsonify({"message": "Booking not found"}), 404
     #use booking_id to find the booking, if not found, return 404
     booking_facade.confirm_booking(booking_id)
-    return jsonify(serialize_booking(booking_manager.get_by_id(booking_id))), 200
+    return jsonify(serialize_booking(booking_manager.get_booking_by_id(booking_id))), 200
     #find then call facade(change status and send notification)
     #read again the booking latest status
     #compore to web, only "Pending" can be confirmed, this API no check, already cancelled bookings can also confirmed
@@ -185,3 +203,80 @@ def serialize_booking(booking):
         booking["created_at"] = booking["created_at"].isoformat()
     return booking
 #booking process one more, build time is "datetime", change to ISO string, otherwise jsonify will return error
+
+
+#-------------------------------------JOSH-------------------------------------------
+
+
+@api_bp.route("/rooms", methods=["GET"])
+def list_rooms():
+    # guest can check the room without login
+    check_in = request.args.get("check_in")
+    check_out = request.args.get("check_out")
+    room_type = request.args.get("room_type")
+    
+    if check_in and check_out:
+        rooms = room_manager.search_available_rooms(check_in, check_out, room_type)
+    else:
+        rooms = room_manager.get_all_rooms()
+    result = []
+    for room in rooms:
+        result.append(serialize_room(room))
+
+    return jsonify(result), 200
+
+
+@api_bp.route("/bookings", methods=["POST"])
+def create_booking():
+    data = request.get_json(silent=True) or {}
+    booking_id, error =booking_facade.book_room(
+        room_id = data.get("room_id"),
+        guest_name = data.get("guest_name", ""),
+        guest_email = data.get("guest_email", ""),
+        guest_phone = data.get("guest_phone", ""),
+        check_in = data.get("check_in", ""),
+        check_out = data.get("check_out", ""),
+        pricing_type= data.get("pricing_type", "standard"),
+    )
+    if error:
+        # date conflict set 409, others set 400
+        if "already booked" in error:
+            status = 409
+        else:
+            status = 400
+        return jsonify({"message": error}), status
+    booking = booking_manager.get_booking_by_id(booking_id)
+    return jsonify(serialize_booking(booking)), 201 
+
+
+@api_bp.route("/booking/mine", methods=["GET"])
+def my_booking():
+    booking_no, phone = request.args.get("booking_no"), request.args.get("phone")
+    if not booking_no or not phone:
+        return jsonify({"message": "booking number and phone query are required."}), 400
+    result = []
+    booking = booking_manager.get_booking_by_numAndPhone(booking_no, phone)
+    if booking:
+        result.append(serialize_booking(booking))
+    return jsonify(result), 200
+    
+
+
+@api_bp.route("/bookings/<booking_id>", methods=["GET"])
+def get_booking(booking_id):
+    booking = booking_manager.get_booking_by_id(booking_id)
+    if not booking:
+        return jsonify({"message": "Booking not found"}), 404
+    return jsonify(serialize_booking(booking)), 200
+
+
+@api_bp.route("/bookings/<booking_id>/cancel", methods=["PUT"])
+def cancel_booking_api(booking_id):
+    if not booking_manager.get_booking_by_id(booking_id):
+        return jsonify({"message": "Booking not found"}), 404
+    
+    data =request.get_json(silent=True) or {}
+    booking_facade.cancel_booking(booking_id, cancelled_by=data.get("cancelled_by", "Guest"))
+    return jsonify(serialize_booking(booking_manager.get_booking_by_id(booking_id))), 200
+
+

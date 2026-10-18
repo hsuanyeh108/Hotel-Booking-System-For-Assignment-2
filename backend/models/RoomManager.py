@@ -72,7 +72,7 @@ class RoomManager:
     
 # search only available rooms
     def search_available_rooms(self, check_in, check_out, room_type=None):
-        rooms = self.get_availabe_rooms(check_in, check_out, room_type)
+        rooms = self.get_available_rooms(check_in, check_out, room_type)
         result = []
         for room in rooms:
             if room["available"]:
@@ -80,11 +80,12 @@ class RoomManager:
         return result
 
 # check the room was booked by others
-    def check_booking_conflict(self, room_id, check_in, check_out):
+    def booking_conflict(self, room_id, check_in, check_out):
         conflictBooking = booking_collection.find_one({"room_id": str(room_id), "status": {"$in" : ACTIVE_STATUSES}, "check_in": {"$lt": check_out}, "check_out": {"$gt": check_in}})
         return conflictBooking
 
 
+# check is any active rooms before admin cancel
     def check_active_rooms_booking(self, room_id):
         return booking_collection.find_one({"room_id": str(room_id), "status": {"$in": ACTIVE_STATUSES}}) is not None
 

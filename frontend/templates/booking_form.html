@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Book {{ room.room_type }}{% endblock %}
+{% block content %}
+<h2>Complete Your Booking</h2>
+
+<form class="panel" method="POST" action="{{ url_for('guest.book', room_id=room._id) }}">
+    <p style="margin-bottom: 10px;"><strong>Selected Room:</strong> {{ room.room_type }}</p>
+    <p style="margin-bottom: 20px;"><strong>Price:</strong>
+        <span style="color: #1E3A8A; font-weight: 700;">{{ room.price|aud }}/per night</span>
+    </p>
+
+    <div class="form-row">
+        <label>Check-in
+            <input type="date" id="check_in" name="check_in" value="{{ check_in }}" min="{{ today }}" required>
+        </label>
+        <label>Check-out
+            <input type="date" id="check_out" name="check_out" value="{{ check_out }}" min="{{ (check_in or today) | next_day }}" required>
+        </label>
+    </div>
+
+    <label>Full Name:
+        <input type="text" name="guest_name" value="{{ form.get('guest_name', '') }}" required placeholder="Enter your full name">
+    </label>
+    <label>Email Address:
+        <input type="email" name="guest_email" value="{{ form.get('guest_email', '') }}" required placeholder="Enter your email">
+    </label>
+    <label>Phone Number:
+        <input type="tel" name="guest_phone" value="{{ form.get('guest_phone', '') }}" required placeholder="Enter your phone number">
+    </label>
+    <label>Pricing Option:
+        <select name="pricing_type">
+            {% for rule in pricing_rules %}
+            <option value="{{ rule.type }}" {% if form.get('pricing_type', 'standard') == rule.type %}selected{% endif %}>
+                {{ rule.label }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+    <p style="font-size: 13px; color: #666; margin-top: -8px; margin-bottom: 16px;">
+        Long Stay Discount applies automatically for 7+ nights; Weekend Surcharge adds 20% to the whole stay.
+    </p>
+
+    <div class="form-actions">
+        <button type="submit" class="btn">Confirm Booking</button>
+        <a class="btn btn-grey" href="{{ url_for('guest.home', check_in=check_in, check_out=check_out) }}">Cancel</a>
+    </div>
+</form>
+
+<h3 style="margin-bottom: 12px; font-size: 18px;">Selected Room Preview</h3>
+<div class="room-card preview">
+    <img src="{{ room.img|img_src }}" alt="{{ room.room_type }}">
+    <div>
+        <h3>{{ room.room_type }}</h3>
+        <p class="desc">{{ room.description }}</p>
+        <div class="price">{{ room.price|aud }}/per night</div>
+    </div>
+</div>
+{% endblock %}
