@@ -14,10 +14,10 @@
         <h1><a href="{{ url_for('guest.home') }}">Hotel Booking System</a></h1>
         <!-- Title link to the home page-->
 
-        <!-- search by room name(after submit, back to home page, using url parameter ?q=...)-->
+        <!-- search by room name(after submit, back to home page, using url parameter ?query=...)-->
         <!-- Only Guest will use, Admin or other page did not have this variable-->
         <form class="header-search" method="GET" action="{{ url_for('guest.home') }}">
-            <input type="text" name="q" value="{{ q or '' }}" placeholder="Search rooms..." aria-label="Search rooms by name">
+            <input type="text" name="query" value="{{ query or '' }}" placeholder="Search rooms..." aria-label="Search rooms by name">
             <!-- Jinja will seen as empty string, so add or ''-->
             {% if check_in and check_out %}
                 <input type="hidden" name="check_in" value="{{ check_in }}">
