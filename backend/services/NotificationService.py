@@ -8,6 +8,7 @@
 from datetime import datetime, timezone #import datatime, timezone in Python
 from backend.config import db
 from backend.services.NoficationContract import NotificationContract
+
 #import NotificationContract Singleton setting category, for this category to read
 
 notifications_collection = db["notifications"] 

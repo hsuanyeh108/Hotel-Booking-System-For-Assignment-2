@@ -9,12 +9,12 @@
 </p><!-- The category name: NotificationContract, this part show for user -->
 
 <form class="panel" method="POST"><!-- Did not write action, means send back to current link, /admin/notification-settings POST branch(admin_routes.py) -->
-    <label style="display:flex; align-items:center; gap:8px;">
-        <input type="checkbox" name="email_enabled" {% if settings.email_enabled %}checked{% endif %}>
+    <label style="display:flex; align-items:center; justify-content:flex-start; gap:8px;">
+        <input type="checkbox" name="email_enabled" style="width:auto; margin:0; padding:0;" {% if settings.email_enabled %}checked{% endif %}>
         Email notifications enabled<!-- settings is backend return setting dict, settings.email_enabled access the value of dict, if is real then add checked, page open is already check situation -->
     </label><!-- name="email_enabled" compare to backend  -->
-    <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-        <input type="checkbox" name="log_enabled" {% if settings.log_enabled %}checked{% endif %}>
+    <label style="display:flex; align-items:center; justify-content:flex-start; gap:8px; margin-top:8px;">
+        <input type="checkbox" name="log_enabled" style="width:auto; margin:0; padding:0;" {% if settings.log_enabled %}checked{% endif %}>
         Server log notifications enabled<!-- settings is backend return setting dict, settings.log_enabled access the value of dict, if is real then add checked, page open is already check situation -->
     </label><!-- name="log_enabled" compare to backend  -->
     <div class="form-actions" style="margin-top:16px;">
