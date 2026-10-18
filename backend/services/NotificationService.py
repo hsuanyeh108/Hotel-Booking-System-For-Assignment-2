@@ -6,14 +6,14 @@
 #Use print() to simulate, and store each record in notification log list to test and verify
 
 from datetime import datetime, timezone #import datatime, timezone in Python
+from backend.config import db
 from backend.services.NoficationContract import NotificationContract
 
 #import NotificationContract Singleton setting category, for this category to read
 
-notification_log = [] 
-#Simulate the notification record write into notification log list
-#store the record in this list to check whether the notice has been sent and what it sent
-#put it outside of the class, for all NotificationService object can share this list
+notifications_collection = db["notifications"] 
+#Simulate the notification record write into notification log database
+#store the record in this database to check whether the notice has been sent and what it sent
 
 class NotificationService:
     def __init__(self): #initialize
@@ -26,17 +26,21 @@ class NotificationService:
             "to": booking.get("guest_email"), #Receiver email address, get the order's guest email
             "subject": f"Booking BK-{booking.get('booking_no')}Update", #email subject, f-string will fill the booking_no into it
             "body": message, #email body
+            "created_at": datetime.now(timezone.utc), #email sent time
         }
-        notification_log.append(entry)
+        notifications_collection.insert_one(dict(entry))
         print(f"[EMAIL] to={entry['to']}subject={entry['subject']}")
         return entry
         #Three parameters: email, to ,subject entry to the notification_log list
         #print to terminal, and return this record
 
     def _send_log(self, booking, message): #Simulate the notification record write into notification log list(internal use)
-        entry = {"channel": "log", "message": f"Booking BK-{booking.get('booking_no')}: {message}"}
+        entry = {
+            "channel": "log", 
+            "message": f"Booking BK-{booking.get('booking_no')}: {message}", 
+            "created_at": datetime.now(timezone.utc),}
         #log channel, only need message
-        notification_log.append(entry)
+        notifications_collection.insert_one(dict(entry))
         print(f"[LOG] {entry['message']}")
         return entry
         #Two parameters: log, message entry to the notification_log list
@@ -63,4 +67,8 @@ class NotificationService:
         }
         #Return the order summary(booking_no, new_status, sent_via, sent_datetime)
         #isoformat() to format the datetime to string
-        #This class always decide from Singleton current setting, So when admin click the save button, the setting will be updatedㄕ
+        #This class always decide from Singleton current setting, So when admin click the save button, the setting will be updated
+
+#Add a function for read recent notifications
+def get_recent_notifications(limit=10):
+    return list(notifications_collection.find().sort("created_at", -1).limit(limit))

@@ -27,7 +27,6 @@
         </form>
 
         <nav>
-            <a class="nav-btn" href="{{ url_for('guest.home') }}">Search Rooms</a>
             <a class="nav-btn" href="{{ url_for('guest.my_bookings') }}">Guest Booking List</a>
             {% if session.get('admin_logged_in') %}
             <!-- Jinja can directly read Flask session, if already logged in then show Admin Dashboard and Log Out-->
