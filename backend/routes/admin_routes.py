@@ -2,13 +2,13 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 #Blueprint: routes group, render_template: HTML template, request: request data(form, method), redirect & url_for: link to another page, session: user login data, flash: message show on next page, abort: stop immediately and return 404
 
 from backend.models.AdminManager import admin_manager
-from backend.models.RoomManager import room_manager
+from backend.models.RoomManager import room_manager, DEFAULT_IMG
 from backend.models.BookingManager import booking_manager
 from backend.services.BookingFacade import booking_facade
 from backend.services.LoginDecorator import LoginDecorator
 from backend.services.NoficationContract import NotificationContract
 from backend.services.NotificationService import notification_log
-from backend.models.RoomManager import room_manager, DEFAULT_IMG
+
 #import project's admin, rooms, bookings, booking facade, login decorator, notification contract, notification log
 
 admin_bp = Blueprint("admin", __name__)#build a "admin" blueprint
@@ -68,8 +68,11 @@ def register():
 @LoginDecorator #The two decorator's sequence is important, if have not login will redirect to login page
 def dashboard():
     bookings = booking_manager.get_all_order()
-    booking_count = len([b for b in bookings if b["status"] != "Cancelled by Guest"])
-    room_count = len(room_manager.get_all_rooms)
+    booking_count = 0
+    for booking in bookings:
+        if booking["status"] != "Cancelled by Guest":
+            booking_count = booking_count +1
+    room_count = len(room_manager.get_all_rooms())
     return render_template("admin_dashboard.html", booking_count=booking_count, room_count=room_count)
     #Get all the room and booking data, return the dashboard
     #use list comprehension to filter the "Cancelled by Guest" booking, calculate number and room number
@@ -148,10 +151,10 @@ def notifications():
 
 #Room Types Management
 def room_types():
-    room_types = request.form.get("room_type", "").strip()
+    room_type = request.form.get("room_type", "").strip()
     price_raw = request.form.get("price", "").strip()
     #read all room types and price, return to dashboard
-    if not room_types or not price_raw:
+    if not room_type or not price_raw:
         return None, "Room name and price are required."
     #If any of them in the form is empty, return None and message
     try:
@@ -166,7 +169,7 @@ def room_types():
     if not img:
         img = DEFAULT_IMG
     return {
-        "room_types": room_types,
+        "room_type": room_type,
         "price": price,
         "description": request.form.get("description", "").strip(),
         "img": img,
@@ -178,7 +181,7 @@ def room_types():
 @admin_bp.route("/rooms")
 @LoginDecorator
 def manage_rooms():
-    return render_template("admin_rooms.html", rooms=room_manager.get_all_rooms())
+    return render_template("admin_room_type_listing.html", rooms=room_manager.get_all_rooms())
 
 #Admin Manage Rooms- Add new rooms
 #If the user is not logged in, redirect to login
@@ -189,12 +192,12 @@ def new_room():
         room_data, error = room_types()
         if error:
             flash(error, "error")
-            return render_template("admin_room_form.html", room=request.form, is_edit=False), 400
+            return render_template("admin_room_type_form.html", room=request.form, is_edit=False), 400
         #GET show empty form, is_edit=False, POST show the form, have error show flash and store the content user fill in 
         room_manager.add_room(room_data)
         flash("Room type added.", "success")
         return redirect(url_for("admin.manage_rooms"))
-    return render_template("admin_room_form.html", room={}, is_edit=False)
+    return render_template("admin_room_type_form.html", room={}, is_edit=False)
     #If no error, add room, show success message and redirect to manage rooms
 
 #Admin Manage Rooms- Edit rooms
@@ -210,13 +213,13 @@ def edit_room(room_id):
         room_data, error = room_types()
         if error:
             flash(error, "error")
-            return render_template("admin_room_form.html", room={**request.form, "_id": room["_id"]}, is_edit=True), 400
+            return render_template("admin_room_type_form.html", room={**request.form, "_id": room["_id"]}, is_edit=True), 400
         #POST have error, let the form content to dictionary and put _id, let the model know which room to update
         room_manager.update(room_id, room_data)
         #success then update the room
         flash("Room type updated.", "success")
         return redirect(url_for("admin.manage_rooms"))
-    return render_template("admin_room_form.html", room=room, is_edit=True)
+    return render_template("admin_room_type_form.html", room=room, is_edit=True)
     #If success, GET put the current room to the form
 
 #Admin Manage Rooms- Delete rooms
@@ -227,7 +230,7 @@ def delete_room_route(room_id):
     if not room_manager.get_room_by_id(room_id):
         abort(404)
     #Use room_id Cannot find this room, return 404 error    
-    if room_manager.get_available_rooms(room_id):
+    if room_manager.check_active_rooms_booking(room_id):
         flash("Cannot delete a room type with active bookings.", "error")
     #If this room has active booking, cannot delete, flash message
     else:

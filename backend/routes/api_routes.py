@@ -123,7 +123,7 @@ def update_room_api(room_id):
 def delete_room_api(room_id):
     if not room_manager.get_room_by_id(room_id):
         return jsonify({"message": "Room not found"}), 404
-    if room_manager.has_active_booking(room_id):
+    if room_manager.check_active_rooms_booking(room_id):
         return jsonify({"message": "Cannot delete a room type with active bookings"}), 409
     #use room_id to find the room, if not found, return 404
     #If this room has active booking, cannot delete, return 409
@@ -144,7 +144,10 @@ def list_pricing_rutes():
 @api_bp.route("/bookings", methods=["GET"])
 @TokenDecorator
 def list_bookings():
-    return jsonify([serialize_booking(b) for b in booking_manager.get_all_order()]), 200
+    result = []
+    for booking in booking_manager.get_all_order():
+        result.append(serialize_booking(booking))
+    return jsonify(result), 200
 #Get all bookings,use Json serialize booking (list comprehension) to consist back 
 #need token, booking include name, email, phone
 
@@ -253,7 +256,7 @@ def my_booking():
         return jsonify({"message": "booking number and phone query are required."}), 400
     result = []
     booking = booking_manager.get_booking_by_numAndPhone(booking_no, phone)
-    for booking in booking_manager.get_booking_by_numAndPhone(booking_no, phone):
+    if booking:
         result.append(serialize_booking(booking))
     return jsonify(result), 200
     

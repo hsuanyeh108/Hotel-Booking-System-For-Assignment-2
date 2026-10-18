@@ -85,6 +85,7 @@ class RoomManager:
         return conflictBooking
 
 
+# check is any active rooms before admin cancel
     def check_active_rooms_booking(self, room_id):
         return booking_collection.find_one({"room_id": str(room_id), "status": {"$in": ACTIVE_STATUSES}}) is not None
 

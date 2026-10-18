@@ -2,9 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 
 from backend.models.RoomManager import room_manager
 from backend.models.BookingManager import booking_manager
-from backend.models.tools import validate_dates
-from services.BookingFacade import BookingFacade
-from services.PricingRuleFactory import PricingRuleFactory
+from backend.services.BookingFacade import booking_facade
+from backend.services.PricingRuleFactory import PricingRuleFactory
 
 
 guest_bp = Blueprint("guest", __name__)
@@ -19,19 +18,19 @@ def home():
     query = request.args.get("query", "").strip()
 
     if check_in or check_out:
-        error = validate_dates(check_in, check_out)
+        error = booking_manager.validate_dates(check_in, check_out)
         if error:
             flash(error, "error")
             check_in = check_out = ""
 
-    rooms = room_manager.get_avaliable_rooms(check_in or None, check_out or None, query or None)
+    rooms = room_manager.get_available_rooms(check_in or None, check_out or None, query or None)
     return render_template("search.html", rooms=rooms, check_in=check_in, check_out=check_out, query=query)
 
 
 # book a room
 @guest_bp.route("/book/<room_id>", methods=["GET", "POST"])
 def book(room_id):
-    room = booking_manager.get_booking_by_id(room_id)
+    room = room_manager.get_room_by_id(room_id)
     if not room:
         abort(404)
 
@@ -39,14 +38,14 @@ def book(room_id):
 
     if request.method == "POST":
         form = request.form
-        booking_id, error = BookingFacade.book_room(
+        booking_id, error = booking_facade.book_room(
             room_id = room_id,
             guest_name = form.get("guest_name", ""),
             guest_email = form.get("guest_email", ""),
             guest_phone =form.get("guest_phone", ""),
             check_in = form.get("check_in", ""),
             check_out = form.get("check_out", ""),
-            pricing_rules = form.get("pricing_rule", "")
+            pricing_type = form.get("pricing_type", "standard")
         )
         if error:
             flash(error, "error")
@@ -88,7 +87,7 @@ def my_bookings():
 
 #cancell booking
 @guest_bp.route("/cancel/<booking_id>", methods = ["POST"])
-def cancel_booking(booking_id):
+def cancel(booking_id):
     booking = booking_manager.get_booking_by_id(booking_id)
     if not booking:
         abort(404)
@@ -96,6 +95,6 @@ def cancel_booking(booking_id):
     if booking["status"] not in ACTIVE_STATUSES:
         flash("This booking is already cancelled.", "error")
     else:
-        cancel_booking(booking_id, cancelled_by="Guest")
+        booking_facade.cancel_booking(booking_id, cancelled_by="Guest")
         flash(f"Booking BK-{booking['booking_no']} has been cancelled.", "success")
-    return redirect(url_for("guest.cancel"))
+    return redirect(url_for("guest.my_bookings"))
