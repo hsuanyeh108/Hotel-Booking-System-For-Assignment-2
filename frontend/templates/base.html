@@ -17,7 +17,7 @@
         <!-- search by room name(after submit, back to home page, using url parameter ?q=...)-->
         <!-- Only Guest will use, Admin or other page did not have this variable-->
         <form class="header-search" method="GET" action="{{ url_for('guest.home') }}">
-            <input type="text" name="q" value="{{ q or '' }}" placeholder="Search rooms..." aria-label="Search rooms by name">
+            <input type="text" name="query" value="{{ query or '' }}" placeholder="Search rooms..." aria-label="Search rooms by name">
             <!-- Jinja will seen as empty string, so add or ''-->
             {% if check_in and check_out %}
                 <input type="hidden" name="check_in" value="{{ check_in }}">
@@ -27,7 +27,6 @@
         </form>
 
         <nav>
-            <a class="nav-btn" href="{{ url_for('guest.home') }}">Search Rooms</a>
             <a class="nav-btn" href="{{ url_for('guest.my_bookings') }}">Guest Booking List</a>
             {% if session.get('admin_logged_in') %}
             <!-- Jinja can directly read Flask session, if already logged in then show Admin Dashboard and Log Out-->

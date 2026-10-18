@@ -7,7 +7,7 @@ from backend.models.BookingManager import booking_manager
 from backend.services.BookingFacade import booking_facade
 from backend.services.LoginDecorator import LoginDecorator
 from backend.services.NoficationContract import NotificationContract
-from backend.services.NotificationService import notification_log
+from backend.services.NotificationService import get_recent_notifications
 
 #import project's admin, rooms, bookings, booking facade, login decorator, notification contract, notification log
 
@@ -141,13 +141,13 @@ def notifications():
     return render_template(
         "admin_notifications.html", 
         settings=config.dict(),
-        recent_log=list(reversed(notification_log))[:10],
+        recent_log=get_recent_notifications(10),
     )
     #GET open the page, using admin_notifications.html, current settings return to html, decide checkbox use default or not
     #notification_log is NotificationService record list of the records that are sent, new is at the back 
     #reversed means take the latest to the front
     #use list because reversed return, should transfer back to list
-    #[:10] means take the first 10 records of notification
+    #(10) means take the first 10 records of notification
 
 #Room Types Management
 def room_types():
