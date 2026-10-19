@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- To show the right size on mobile-->
-    <title>{% block title %}Hotel Booking System tests{% endblock %}</title>
+    <title>{% block title %}Hotel Booking System{% endblock %}</title>
     <!-- If the page has no title, show "Hotel Booking System" as default-->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <!-- consist the /static/style.css url link-->
@@ -27,6 +27,7 @@
         </form>
 
         <nav>
+            <a class="nav-btn" href="{{ url_for('guest.my_bookings') }}">test</a>
             <a class="nav-btn" href="{{ url_for('guest.my_bookings') }}">Guest Booking List</a>
             {% if session.get('admin_logged_in') %}
             <!-- Jinja can directly read Flask session, if already logged in then show Admin Dashboard and Log Out-->
