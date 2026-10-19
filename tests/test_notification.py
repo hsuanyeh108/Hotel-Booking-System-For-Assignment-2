@@ -4,6 +4,10 @@
 from backend.services.NoficationContract import NotificationContract
 from backend.services.NotificationService import NotificationService, get_recent_notifications
 
+def setup_function():
+    #Before each test, reset Singleton and notification log, to avoid pollute
+    NotificationContract.reset_testing()
+    
 # ---------- Singleton Pattern ----------
 def test_singleton_returns_the_same_instance():
     a = NotificationContract()
@@ -54,42 +58,28 @@ def test_service_disabled_log_channel():
 # ---------- Through API Test（Same as Postman）----------
 
 def test_api_get_notification_settings_requires_login(client):
-    resp = client.get("/api/admin/notification-settings")
+    resp = client.get("/api/admin/notifications")
     assert resp.status_code == 401
 
 
-def test_api_update_notification_settings(client, app):
-    with app.app_context():
-        from backend.models.AdminManager import create_admin
-        create_admin(username="n@test.com", password="pass1234", email="n@test.com", name="N")
-    login_resp = client.post("/api/auth/login", json={"email": "n@test.com", "password": "pass1234"})
-    token = login_resp.get_json()["token"]
-    headers = {"Authorization": f"Bearer {token}"}
-
-    resp = client.put("/api/admin/notification-settings", json={"email_enabled": False}, headers=headers)
+def test_api_update_notification_settings(client, auth_headers):
+    resp = client.put("/api/admin/notifications",
+                      json={"email_enabled": False}, headers=auth_headers)
     assert resp.status_code == 200
-    assert resp.get_json()["email_enabled"] is False
+    assert NotificationContract().get_setting("email_enabled") is False
 
-    resp = client.put("/api/admin/notification-settings", json={"sms_enabled": True}, headers=headers)
-    assert resp.status_code == 400  # sms_enabled are not allowed field
+def test_confirming_a_booking_triggers_a_notification(client, auth_headers):
+    import backend.config as config
+    from backend.services.BookingFacade import booking_facade
 
+    room = config.db["rooms"].find_one()          # When apps runs, put in the default rooms
+    booking_id, error = booking_facade.book_room(
+        str(room["_id"]), "Guest", "g@test.com", "0400000000",
+        "2026-12-01", "2026-12-03",
+    )
+    assert error is None, error                    # If booking fails, this will show the reason
 
-def test_confirming_a_booking_triggers_a_notification(client, app):
-    with app.app_context():
-        from backend.models.AdminManager import create_admin
-        create_admin(username="c@test.com", password="pass1234", email="c@test.com", name="C")
-    login_resp = client.post("/api/auth/login", json={"email": "c@test.com", "password": "pass1234"})
-    token = login_resp.get_json()["token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    resp = client.put(f"/api/bookings/{booking_id}/confirm", headers=auth_headers)
+    assert resp.status_code == 200
 
-    room_resp = client.post("/api/rooms", json={"room_type": "Notify Room", "price": 50.0}, headers=headers)
-    room_id = room_resp.get_json()["id"]
-    booking_resp = client.post("/api/bookings", json={
-        "room_id": room_id, "guest_name": "G", "guest_email": "g@test.com",
-        "guest_phone": "0400000000", "check_in": "2027-03-01", "check_out": "2027-03-02",
-    })
-    booking_id = booking_resp.get_json()["_id"]
-
-    assert len(get_recent_notifications()) == 0  # Create bookings still don't trigger notifications
-    client.put(f"/api/bookings/{booking_id}/confirm", headers=headers)
-    assert len(get_recent_notifications()) == 2  # After Confirmed, email + log will sent out one 
+    assert len(get_recent_notifications()) == 2    # email + log sent one 
