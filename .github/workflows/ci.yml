@@ -39,3 +39,14 @@ jobs:
         run: |
           python3 -m venv venv
           venv/bin/pip install -r requirements.txt
+
+      - name: Write .env from secret
+        env:
+          PROD_ENV: ${{ secrets.PROD }}
+        run: printf '%s\n' "$PROD_ENV" > .env
+
+      - name: Restart app with pm2
+        run: |
+          pm2 delete hotel || true
+          pm2 start "venv/bin/gunicorn -w 2 -b 127.0.0.1:3000 app:app" --name hotel
+          pm2 save
