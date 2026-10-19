@@ -18,7 +18,7 @@ class PricingRuleFactory:
         elif rule_type == "long_stay":
             return LongStayPricing()
         else:
-            raise ValueError(f"Unkown pricing rule '{rule_type}'")
+            raise ValueError(f"Unknown pricing rule '{rule_type}'")
 
     @staticmethod
     def list_rule():
