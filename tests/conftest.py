@@ -26,6 +26,8 @@ import pytest  # no quality assurance: module level import not at top of file
 @pytest.fixture(autouse=True)
 def clean_database():
     #Before every testing, will clear all collections, to ensure each test will not influence each other
+    from backend.services.NoficationContract import NotificationContract
+    NotificationContract.reset_testing()
     for name in config.db.list_collection_names():
         config.db[name].delete_many({})
     yield
