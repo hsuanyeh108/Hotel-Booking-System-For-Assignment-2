@@ -30,7 +30,7 @@ def test_dict_returns_a_copy_not_the_internal_state():
 
 def test_service_sends_via_both_channels_by_default():
     booking = {"booking_no": 3, "guest_email": "g@test.com"}
-    result = NotificationService().notify_status_change(booking, "Confirmed")
+    result = NotificationService().status_change(booking, "Confirmed")
     assert set(result["sent_via"]) == {"email", "log"}
     assert len(get_recent_notifications()) == 2
 
@@ -38,7 +38,7 @@ def test_service_sends_via_both_channels_by_default():
 def test_service_disabled_email_channel():
     NotificationContract().set_setting("email_enabled", False)
     booking = {"booking_no": 4, "guest_email": "g@test.com"}
-    result = NotificationService().notify_status_change(booking, "Cancelled by Guest")
+    result = NotificationService().status_change(booking, "Cancelled by Guest")
     assert result["sent_via"] == ["log"]
     assert len(get_recent_notifications()) == 1
 
@@ -46,7 +46,7 @@ def test_service_disabled_email_channel():
 def test_service_disabled_log_channel():
     NotificationContract().set_setting("log_enabled", False)
     booking = {"booking_no": 5, "guest_email": "g@test.com"}
-    result = NotificationService().notify_status_change(booking, "Confirmed")
+    result = NotificationService().status_change(booking, "Confirmed")
     assert result["sent_via"] == ["email"]
     assert len(get_recent_notifications()) == 1
 
