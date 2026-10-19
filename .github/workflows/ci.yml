@@ -27,10 +27,14 @@ jobs:
         run: python -m pytest -v
 
   deploy:
-    name: Deploy to EC2
+    name: Deploy to ${{ matrix.server }}
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: self-hosted
+    strategy:
+      fail-fast: false
+      matrix:
+        server: [server1, server2]
+    runs-on: [self-hosted, "${{ matrix.server }}"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
